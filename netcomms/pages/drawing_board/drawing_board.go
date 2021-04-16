@@ -1,4 +1,4 @@
-package board_page
+package drawing_board
 
 import (
 	"ChemBoard/all_boards"
@@ -13,6 +13,11 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type UInfo struct {
+	ID     int
+	Status string
+}
+
 func HandleSockets(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Origin") != "http://"+r.Host {
 		http.Error(w, "Origin not allowed", http.StatusForbidden)
@@ -21,22 +26,26 @@ func HandleSockets(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		boardID, _ := strconv.Atoi(vars["id"])
 		if board := all_boards.GetByID(boardID); board != nil {
-			RegNewBoardObserver(ws, board, session_info.GetSessionUserID(r))
+			RegNewBoardObserver(ws, board, session_info.GetUserID(r))
 		}
 	}
 }
 
-func BoardPage(w http.ResponseWriter, r *http.Request) {
+func Page(w http.ResponseWriter, r *http.Request) {
 	if !session_info.IsUserLoggedIn(r) {
 		http.Redirect(w, r, "login", http.StatusSeeOther)
 	} else {
 		vars := mux.Vars(r)
 		boardID, _ := strconv.Atoi(vars["id"])
-		if !all_boards.AvailableToUser(session_info.GetSessionUserID(r), boardID) {
+		if !all_boards.AvailableToUser(session_info.GetUserID(r), boardID) {
 			http.Redirect(w, r, "/myboards", http.StatusSeeOther)
 		} else {
+			s := "observer"
+			if all_boards.IsAdmin(session_info.GetUserID(r), boardID) {
+				s = "admin"
+			}
 			tmpl, _ := template.ParseFiles("./templates/board.html")
-			tmpl.Execute(w, nil)
+			tmpl.Execute(w, UInfo{session_info.GetUserID(r), s})
 		}
 	}
 }

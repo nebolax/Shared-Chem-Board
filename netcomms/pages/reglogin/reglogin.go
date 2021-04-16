@@ -30,15 +30,15 @@ func ProcRegister(w http.ResponseWriter, r *http.Request) {
 	id, cs := RegUser(inpLogin, inpEmail, inpPwd)
 	switch cs {
 	case status.OK:
-		session_info.SetSessionUserID(w, r, id)
-		http.Redirect(w, r, "/myboards", http.StatusSeeOther)
+		session_info.SetUserID(w, r, id)
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	case status.UserAlreadyExists:
 		tmpl, _ := template.ParseFiles("./templates/register.html")
 		tmpl.Execute(w, "User already exists")
 	}
 }
 
-func GetRegisterHTML(w http.ResponseWriter, r *http.Request) {
+func RegisterPage(w http.ResponseWriter, r *http.Request) {
 	tmpl, _ := template.ParseFiles("./templates/register.html")
 	tmpl.Execute(w, "")
 }
@@ -51,8 +51,8 @@ func ProcLogin(w http.ResponseWriter, r *http.Request) {
 	tmpl, _ := template.ParseFiles("./templates/login.html")
 	switch cs {
 	case status.OK:
-		session_info.SetSessionUserID(w, r, id)
-		http.Redirect(w, r, "/myboards", http.StatusSeeOther)
+		session_info.SetUserID(w, r, id)
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	case status.NoSuchUser:
 		tmpl.Execute(w, "user does not exist")
 	case status.IncorrectPassword:
@@ -60,14 +60,14 @@ func ProcLogin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetLoginHTML(w http.ResponseWriter, r *http.Request) {
+func LoginPage(w http.ResponseWriter, r *http.Request) {
 	tmpl, _ := template.ParseFiles("./templates/login.html")
 	tmpl.Execute(w, "")
 }
 
 //LogoutUser is func
 func LogoutUser(w http.ResponseWriter, r *http.Request) {
-	session_info.SetSessionUserID(w, r, 0)
+	session_info.SetUserID(w, r, 0)
 }
 
 //RegUser is func

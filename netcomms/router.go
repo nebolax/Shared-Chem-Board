@@ -2,7 +2,10 @@ package netcomms
 
 import (
 	"ChemBoard/netcomms/pages/available_boards"
-	boards "ChemBoard/netcomms/pages/board_page"
+	"ChemBoard/netcomms/pages/board_creation"
+	"ChemBoard/netcomms/pages/drawing_board"
+	"ChemBoard/netcomms/pages/myboards"
+	"ChemBoard/netcomms/pages/personal_home"
 	"ChemBoard/netcomms/pages/reglogin"
 	"log"
 	"net/http"
@@ -11,14 +14,19 @@ import (
 )
 
 func setupRoutes(router *mux.Router) {
-	router.HandleFunc("/board{id:[0-9]+}", boards.BoardPage)
+	router.HandleFunc("/board{id:[0-9]+}", drawing_board.Page)
 
-	router.HandleFunc("/login", reglogin.GetLoginHTML).Methods("GET")
-	router.HandleFunc("/register", reglogin.GetRegisterHTML).Methods("GET")
+	router.HandleFunc("/login", reglogin.LoginPage).Methods("GET")
+	router.HandleFunc("/register", reglogin.RegisterPage).Methods("GET")
 	router.HandleFunc("/login", reglogin.ProcLogin).Methods("POST")
 	router.HandleFunc("/register", reglogin.ProcRegister).Methods("POST")
 
-	router.HandleFunc("/myboards", available_boards.MyBoardsPage)
+	router.HandleFunc("/shared-with-me", available_boards.Page)
+	router.HandleFunc("/myboards", myboards.Page)
+	router.HandleFunc("/home", personal_home.Page)
+
+	router.HandleFunc("/newboard", board_creation.Page).Methods("GET")
+	router.HandleFunc("/newboard", board_creation.ProcCreation).Methods("POST")
 }
 
 func StartServer() {
@@ -27,7 +35,7 @@ func StartServer() {
 
 	setupRoutes(router)
 
-	router.HandleFunc("/ws/board{id:[0-9]+}", boards.HandleSockets)
+	router.HandleFunc("/ws/board{id:[0-9]+}", drawing_board.HandleSockets)
 	http.Handle("/", router)
 
 	log.Println("starting http server at port 8090")

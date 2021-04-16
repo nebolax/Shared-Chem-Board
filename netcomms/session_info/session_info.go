@@ -12,28 +12,28 @@ var (
 	store = sessions.NewCookieStore(key)
 )
 
-//GetSessionUserInfo is func
-func GetSessionUserInfo(r *http.Request) (int, status.StatusCode) {
-	id := GetSessionUserID(r)
+//GetUserInfo is func
+func GetUserInfo(r *http.Request) (int, status.StatusCode) {
+	id := GetUserID(r)
 
 	return id, status.OK
 }
 
 //IsUserLoggedIn is func
 func IsUserLoggedIn(r *http.Request) bool {
-	id := GetSessionUserID(r)
+	id := GetUserID(r)
 	return id != 0
 }
 
-//SetSessionUserID id func to set user id:D!!
-func SetSessionUserID(w http.ResponseWriter, r *http.Request, id int) {
+//SetUserID id func to set user id:D!!
+func SetUserID(w http.ResponseWriter, r *http.Request, id int) {
 	session, _ := store.Get(r, "user-info")
 	session.Values["userid"] = id
 	session.Save(r, w)
 }
 
-//GetSessionUserID is func
-func GetSessionUserID(r *http.Request) int {
+//GetUserID is func
+func GetUserID(r *http.Request) int {
 	session, _ := store.Get(r, "user-info")
 	id, ok := session.Values["userid"].(int)
 	if !ok {

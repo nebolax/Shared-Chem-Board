@@ -17,8 +17,8 @@ let y = 0
 const canvas = document.getElementById('canvas')
 const ctx = canvas.getContext('2d')
 
-canvas.width = 1000
-canvas.height = 1000
+canvas.width = 500
+canvas.height = 500
 
 let sendBuf = []
 

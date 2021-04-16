@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <form method="POST">
+        <input type="text" placeholder="Название доски" />
+        <button type="submit">Искать</button>
+    </form>
+    <ul>
+        {{ range . }}
+        <li>
+            <a href="/board{{ .ID }}">
+                <p>{{ .Name }}</p>
+            </a>
+        </li>
+        {{end}}
+    </ul>
+</body>
+
+</html>
