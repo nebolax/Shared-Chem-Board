@@ -14,7 +14,6 @@ import (
 )
 
 func HandleSockets(w http.ResponseWriter, r *http.Request) {
-	println("new user")
 	if r.Header.Get("Origin") != "http://"+r.Host {
 		http.Error(w, "Origin not allowed", http.StatusForbidden)
 	} else {
@@ -30,9 +29,16 @@ func HandleSockets(w http.ResponseWriter, r *http.Request) {
 func BoardPage(w http.ResponseWriter, r *http.Request) {
 	if !session_info.IsUserLoggedIn(r) {
 		http.Redirect(w, r, "login", http.StatusSeeOther)
+	} else {
+		vars := mux.Vars(r)
+		boardID, _ := strconv.Atoi(vars["id"])
+		if !all_boards.AvailableToUser(session_info.GetSessionUserID(r), boardID) {
+			http.Redirect(w, r, "/myboards", http.StatusSeeOther)
+		} else {
+			tmpl, _ := template.ParseFiles("./templates/board.html")
+			tmpl.Execute(w, nil)
+		}
 	}
-	tmpl, _ := template.ParseFiles("./templates/board.html")
-	tmpl.Execute(w, nil)
 }
 
 type sockClient struct {
@@ -82,8 +88,6 @@ func sendtoUserDevices(userID int, message interface{}) {
 //writeSingleMessage is func
 func writeSingleMessage(connID int, message interface{}) {
 	client := clients[connID]
-	println(message)
-	println(client.userID)
 	client.mu.Lock()
 	err := client.sock.WriteJSON(message)
 	if err != nil {
@@ -101,9 +105,7 @@ func delClient(connID int) {
 func readSingleMessage(connID int) (canvasMessage, bool) {
 	var msg canvasMessage
 	err := clients[connID].sock.ReadJSON(&msg)
-	println("read")
 	if err != nil {
-		println(err.Error())
 		delClient(connID)
 		return canvasMessage{}, false
 	}
@@ -118,7 +120,6 @@ func procIncomingMessages(connID int) {
 		msg, ok := readSingleMessage(connID)
 		if ok {
 			SendtoBoardObservers(client.board.ID, msg)
-			println("sent")
 		} else {
 			break
 		}

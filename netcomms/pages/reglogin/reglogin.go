@@ -31,7 +31,7 @@ func ProcRegister(w http.ResponseWriter, r *http.Request) {
 	switch cs {
 	case status.OK:
 		session_info.SetSessionUserID(w, r, id)
-		http.Redirect(w, r, "/portfolio", http.StatusSeeOther)
+		http.Redirect(w, r, "/myboards", http.StatusSeeOther)
 	case status.UserAlreadyExists:
 		tmpl, _ := template.ParseFiles("./templates/register.html")
 		tmpl.Execute(w, "User already exists")
@@ -52,7 +52,7 @@ func ProcLogin(w http.ResponseWriter, r *http.Request) {
 	switch cs {
 	case status.OK:
 		session_info.SetSessionUserID(w, r, id)
-		http.Redirect(w, r, "/portfolio", http.StatusSeeOther)
+		http.Redirect(w, r, "/myboards", http.StatusSeeOther)
 	case status.NoSuchUser:
 		tmpl.Execute(w, "user does not exist")
 	case status.IncorrectPassword:

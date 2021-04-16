@@ -1,6 +1,7 @@
 package netcomms
 
 import (
+	"ChemBoard/netcomms/pages/available_boards"
 	boards "ChemBoard/netcomms/pages/board_page"
 	"ChemBoard/netcomms/pages/reglogin"
 	"log"
@@ -16,6 +17,8 @@ func setupRoutes(router *mux.Router) {
 	router.HandleFunc("/register", reglogin.GetRegisterHTML).Methods("GET")
 	router.HandleFunc("/login", reglogin.ProcLogin).Methods("POST")
 	router.HandleFunc("/register", reglogin.ProcRegister).Methods("POST")
+
+	router.HandleFunc("/myboards", available_boards.MyBoardsPage)
 }
 
 func StartServer() {
