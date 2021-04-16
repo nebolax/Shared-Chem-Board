@@ -1,7 +1,7 @@
 package session_info
 
 import (
-	"ChemBoard/statuses"
+	"ChemBoard/status"
 	"net/http"
 
 	"github.com/gorilla/sessions"
@@ -13,10 +13,10 @@ var (
 )
 
 //GetSessionUserInfo is func
-func GetSessionUserInfo(r *http.Request) (int, statuses.StatusCode) {
+func GetSessionUserInfo(r *http.Request) (int, status.StatusCode) {
 	id := GetSessionUserID(r)
 
-	return id, statuses.OK
+	return id, status.OK
 }
 
 //IsUserLoggedIn is func

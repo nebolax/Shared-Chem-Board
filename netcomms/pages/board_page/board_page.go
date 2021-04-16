@@ -28,6 +28,9 @@ func HandleSockets(w http.ResponseWriter, r *http.Request) {
 }
 
 func BoardPage(w http.ResponseWriter, r *http.Request) {
+	if !session_info.IsUserLoggedIn(r) {
+		http.Redirect(w, r, "login", http.StatusSeeOther)
+	}
 	tmpl, _ := template.ParseFiles("./templates/board.html")
 	tmpl.Execute(w, nil)
 }

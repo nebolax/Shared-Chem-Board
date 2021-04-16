@@ -1,4 +1,4 @@
-package statuses
+package status
 
 type StatusCode string
 
@@ -10,6 +10,8 @@ const (
 	NoSuchUser StatusCode = "User with such login doesn't exists"
 
 	IncorrectPassword StatusCode = "Incorrect password"
+
+	UserAlreadyExists StatusCode = "User with such nickname or password is already registered"
 
 	NotLoggedIn StatusCode = "User isn't logged in"
 )
