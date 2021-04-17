@@ -8,18 +8,18 @@ import (
 	"net/http"
 )
 
-type dbUser struct {
+type DBUser struct {
 	ID       int
-	login    string
-	email    string
-	password string
+	Login    string
+	Email    string
+	Password string
 }
 
-var users []*dbUser
+var users []*DBUser
 
 func Logout(w http.ResponseWriter, r *http.Request) {
-	LogoutUser(w, r)
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	session_info.SetUserID(w, r, 0)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func ProcRegister(w http.ResponseWriter, r *http.Request) {
@@ -65,18 +65,13 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, "")
 }
 
-//LogoutUser is func
-func LogoutUser(w http.ResponseWriter, r *http.Request) {
-	session_info.SetUserID(w, r, 0)
-}
-
 //RegUser is func
 func RegUser(login, email, pwd string) (int, status.StatusCode) {
 	if userFromDB(login) != nil || userFromDB(email) != nil {
 		return 0, status.UserAlreadyExists
 	}
 	id := usersinc.NewID()
-	user := &dbUser{id, login, email, pwd}
+	user := &DBUser{id, login, email, pwd}
 	users = append(users, user)
 	return id, status.OK
 }
@@ -86,7 +81,7 @@ func LoginUser(logmail, inpPwd string) (int, status.StatusCode) {
 	if user := userFromDB(logmail); user == nil {
 		return 0, status.NoSuchUser
 	} else {
-		if user.password != inpPwd {
+		if user.Password != inpPwd {
 			return 0, status.IncorrectPassword
 		} else {
 			return user.ID, status.OK
@@ -94,9 +89,9 @@ func LoginUser(logmail, inpPwd string) (int, status.StatusCode) {
 	}
 }
 
-func userFromDB(logmail string) *dbUser {
+func userFromDB(logmail string) *DBUser {
 	for _, user := range users {
-		if user.login == logmail || user.email == logmail {
+		if user.Login == logmail || user.Email == logmail {
 			return user
 		}
 	}

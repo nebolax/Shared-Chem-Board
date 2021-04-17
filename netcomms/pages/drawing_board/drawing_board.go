@@ -13,11 +13,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type UInfo struct {
-	ID     int
-	Status string
-}
-
 func HandleSockets(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Origin") != "http://"+r.Host {
 		http.Error(w, "Origin not allowed", http.StatusForbidden)
@@ -31,6 +26,15 @@ func HandleSockets(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type AdminInfo struct {
+	IsAdmin   bool
+	Observers []all_boards.Observer
+}
+
+type ObserverInfo struct {
+	IsAdmin bool
+}
+
 func Page(w http.ResponseWriter, r *http.Request) {
 	if !session_info.IsUserLoggedIn(r) {
 		http.Redirect(w, r, "login", http.StatusSeeOther)
@@ -40,12 +44,16 @@ func Page(w http.ResponseWriter, r *http.Request) {
 		if !all_boards.AvailableToUser(session_info.GetUserID(r), boardID) {
 			http.Redirect(w, r, "/myboards", http.StatusSeeOther)
 		} else {
-			s := "observer"
+			var info interface{}
 			if all_boards.IsAdmin(session_info.GetUserID(r), boardID) {
-				s = "admin"
+				if b, ok := all_boards.GetByID(boardID); ok {
+					info = AdminInfo{true, b.Observers}
+				}
+			} else {
+				info = ObserverInfo{false}
 			}
-			tmpl, _ := template.ParseFiles("./templates/board.html")
-			tmpl.Execute(w, UInfo{session_info.GetUserID(r), s})
+			tmpl, _ := template.ParseFiles("./templates/drawing_board.html")
+			tmpl.Execute(w, info)
 		}
 	}
 }
@@ -72,9 +80,9 @@ type boardPageSetup struct {
 var clients = make(map[int]*sockClient)
 
 //SendtoBoardObservers is func
-func SendtoBoardObservers(boardID int, message interface{}) {
+func SendtoBoardObservers(boardID, originUser int, message interface{}) {
 	for _, client := range clients {
-		if client.boardID == boardID {
+		if client.boardID == boardID && client.userID != originUser {
 			sendtoUserDevices(client.userID, message)
 		}
 	}
@@ -124,7 +132,7 @@ func procIncomingMessages(connID int) {
 		msg, ok := readSingleMessage(connID)
 		if ok {
 			all_boards.NewDrawing(client.boardID, msg.Points)
-			SendtoBoardObservers(client.boardID, msg)
+			SendtoBoardObservers(client.boardID, client.userID, msg)
 		} else {
 			break
 		}

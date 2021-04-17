@@ -1,14 +1,21 @@
 package all_boards
 
-import "sync"
+import (
+	"sync"
+)
 
 type Board struct {
 	ID        int
 	Admin     int
 	Name      string
 	Password  string
-	Observers []int
+	Observers []Observer
 	History   [][]Point
+}
+
+type Observer struct {
+	UserID  int
+	History [][]Point
 }
 
 type DataElem struct {

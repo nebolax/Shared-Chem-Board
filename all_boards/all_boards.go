@@ -17,7 +17,7 @@ var BoardsArray = []*DataElem{
 
 func CreateBoard(adminID int, name, pwd string) int {
 	nID := boardsinc.NewID()
-	board := &Board{nID, adminID, name, pwd, []int{}, [][]Point{}}
+	board := &Board{nID, adminID, name, pwd, []Observer{}, [][]Point{}}
 	BoardsArray = append(BoardsArray, &DataElem{board, sync.Mutex{}})
 	return nID
 }
@@ -43,8 +43,8 @@ func pointerByID(id int) *Board {
 func SharedWithUser(userID int) []Board {
 	res := []Board{}
 	for _, el := range BoardsArray {
-		for _, ux := range el.board.Observers {
-			if ux == userID {
+		for _, obs := range el.board.Observers {
+			if obs.userID == userID {
 				res = append(res, *el.board)
 				break
 			}
@@ -91,7 +91,7 @@ func IsAdmin(userID, boardID int) bool {
 func AddObserver(boardID, userID int, pwd string) bool {
 	if b := pointerByID(boardID); b != nil {
 		if b.Password == pwd {
-			b.Observers = append(b.Observers, userID)
+			b.Observers = append(b.Observers, Observer{userID: userID})
 			return true
 		}
 	}

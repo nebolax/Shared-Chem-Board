@@ -9,6 +9,10 @@ ws.onmessage = function(e) {
     }
 }
 
+function changeView(obsID) {
+
+}
+
 // When true, moving the mouse draws on the canvas
 let isDrawing = false
 let x = 0
