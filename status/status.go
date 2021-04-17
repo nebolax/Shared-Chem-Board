@@ -14,4 +14,6 @@ const (
 	UserAlreadyExists StatusCode = "User with such nickname or password is already registered"
 
 	NotLoggedIn StatusCode = "User isn't logged in"
+
+	NoSuchBoard StatusCode = "Board with this is doesn't exist"
 )

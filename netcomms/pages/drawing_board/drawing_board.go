@@ -25,8 +25,8 @@ func HandleSockets(w http.ResponseWriter, r *http.Request) {
 		ws, _ := websocket.Upgrade(w, r, nil, 0, 0)
 		vars := mux.Vars(r)
 		boardID, _ := strconv.Atoi(vars["id"])
-		if board := all_boards.GetByID(boardID); board != nil {
-			RegNewBoardObserver(ws, board, session_info.GetUserID(r))
+		if board, ok := all_boards.GetByID(boardID); ok {
+			RegNewBoardObserver(ws, board.ID, session_info.GetUserID(r))
 		}
 	}
 }
@@ -51,20 +51,15 @@ func Page(w http.ResponseWriter, r *http.Request) {
 }
 
 type sockClient struct {
-	userID int
-	board  *all_boards.Board
-	sock   *websocket.Conn
-	mu     sync.Mutex
-}
-
-type Point struct {
-	X int `json:"x"`
-	Y int `json:"y"`
+	userID  int
+	boardID int
+	sock    *websocket.Conn
+	mu      sync.Mutex
 }
 
 //canvasMessage is a struct
 type canvasMessage struct {
-	Points []Point `json:"points"`
+	Points []all_boards.Point `json:"points"`
 }
 
 type boardPageSetup struct {
@@ -79,7 +74,7 @@ var clients = make(map[int]*sockClient)
 //SendtoBoardObservers is func
 func SendtoBoardObservers(boardID int, message interface{}) {
 	for _, client := range clients {
-		if client.board.ID == boardID {
+		if client.boardID == boardID {
 			sendtoUserDevices(client.userID, message)
 		}
 	}
@@ -128,7 +123,8 @@ func procIncomingMessages(connID int) {
 	for {
 		msg, ok := readSingleMessage(connID)
 		if ok {
-			SendtoBoardObservers(client.board.ID, msg)
+			all_boards.NewDrawing(client.boardID, msg.Points)
+			SendtoBoardObservers(client.boardID, msg)
 		} else {
 			break
 		}
@@ -136,9 +132,13 @@ func procIncomingMessages(connID int) {
 }
 
 //RegNewBoardObserver is func
-func RegNewBoardObserver(ws *websocket.Conn, board *all_boards.Board, userID int) {
+func RegNewBoardObserver(ws *websocket.Conn, boardID, userID int) {
 	connID := connsinc.NewID()
-	clients[connID] = &sockClient{userID: userID, board: board, sock: ws}
-	//writeSingleMessage(connID)
+	clients[connID] = &sockClient{userID: userID, boardID: boardID, sock: ws}
+	if b, ok := all_boards.GetByID(boardID); ok {
+		for _, p := range b.History {
+			writeSingleMessage(connID, canvasMessage{Points: p})
+		}
+	}
 	go procIncomingMessages(connID)
 }

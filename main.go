@@ -1,7 +1,10 @@
 package main
 
-import "ChemBoard/netcomms"
+import (
+	"ChemBoard/netcomms"
+)
 
 func main() {
+
 	netcomms.StartServer()
 }

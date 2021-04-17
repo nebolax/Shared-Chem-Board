@@ -3,10 +3,12 @@ package netcomms
 import (
 	"ChemBoard/netcomms/pages/available_boards"
 	"ChemBoard/netcomms/pages/board_creation"
+	"ChemBoard/netcomms/pages/board_joining"
 	"ChemBoard/netcomms/pages/drawing_board"
 	"ChemBoard/netcomms/pages/myboards"
 	"ChemBoard/netcomms/pages/personal_home"
 	"ChemBoard/netcomms/pages/reglogin"
+	"ChemBoard/netcomms/pages/search_board"
 	"log"
 	"net/http"
 
@@ -27,6 +29,12 @@ func setupRoutes(router *mux.Router) {
 
 	router.HandleFunc("/newboard", board_creation.Page).Methods("GET")
 	router.HandleFunc("/newboard", board_creation.ProcCreation).Methods("POST")
+
+	router.HandleFunc("/search-board", search_board.Page).Methods("GET")
+	router.HandleFunc("/search-board", search_board.ProcSearching).Methods("POST")
+
+	router.HandleFunc("/join-board{id:[0-9]+}", board_joining.Page).Methods("GET")
+	router.HandleFunc("/join-board{id:[0-9]+}", board_joining.ProcJoining).Methods("POST")
 }
 
 func StartServer() {

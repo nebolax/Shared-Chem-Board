@@ -2,10 +2,11 @@ package all_boards
 
 import (
 	"ChemBoard/all_boards/boardsinc"
+	"strings"
 	"sync"
 )
 
-var BoardsArray = []*Board{
+var BoardsArray = []*DataElem{
 	// {1, 1, "First", "x", []int{1, 2, 3}, sync.Mutex{}},
 	// {2, 2, "Second", "y", []int{1, 2}, sync.Mutex{}},
 	// {3, 1, "Third", "z", []int{2, 3}, sync.Mutex{}},
@@ -16,26 +17,35 @@ var BoardsArray = []*Board{
 
 func CreateBoard(adminID int, name, pwd string) int {
 	nID := boardsinc.NewID()
-	board := &Board{nID, adminID, name, pwd, []int{}, sync.Mutex{}}
-	BoardsArray = append(BoardsArray, board)
+	board := &Board{nID, adminID, name, pwd, []int{}, [][]Point{}}
+	BoardsArray = append(BoardsArray, &DataElem{board, sync.Mutex{}})
 	return nID
 }
 
-func GetByID(id int) *Board {
-	for _, board := range BoardsArray {
-		if board.ID == id {
-			return board
+func GetByID(id int) (Board, bool) {
+	for _, el := range BoardsArray {
+		if el.board.ID == id {
+			return *el.board, true
+		}
+	}
+	return Board{}, false
+}
+
+func pointerByID(id int) *Board {
+	for _, el := range BoardsArray {
+		if el.board.ID == id {
+			return el.board
 		}
 	}
 	return nil
 }
 
-func SharedWithUser(userID int) []*Board {
-	res := []*Board{}
-	for _, b := range BoardsArray {
-		for _, ux := range b.Users {
+func SharedWithUser(userID int) []Board {
+	res := []Board{}
+	for _, el := range BoardsArray {
+		for _, ux := range el.board.Observers {
 			if ux == userID {
-				res = append(res, b)
+				res = append(res, *el.board)
 				break
 			}
 		}
@@ -47,7 +57,7 @@ func SharedWithUser(userID int) []*Board {
 func AvailableToUser(userID, boardID int) bool {
 	userBoards := SharedWithUser(userID)
 
-	if GetByID(boardID).Admin == userID {
+	if IsAdmin(userID, boardID) {
 		return true
 	}
 
@@ -60,11 +70,11 @@ func AvailableToUser(userID, boardID int) bool {
 	return false
 }
 
-func UserAdmin(userID int) []*Board {
-	res := []*Board{}
-	for _, b := range BoardsArray {
-		if b.Admin == userID {
-			res = append(res, b)
+func UserAdmin(userID int) []Board {
+	res := []Board{}
+	for _, el := range BoardsArray {
+		if el.board.Admin == userID {
+			res = append(res, *el.board)
 		}
 	}
 
@@ -72,5 +82,36 @@ func UserAdmin(userID int) []*Board {
 }
 
 func IsAdmin(userID, boardID int) bool {
-	return GetByID(boardID).Admin == userID
+	if b, ok := GetByID(boardID); ok && b.Admin == userID {
+		return true
+	}
+	return false
+}
+
+func AddObserver(boardID, userID int, pwd string) bool {
+	if b := pointerByID(boardID); b != nil {
+		if b.Password == pwd {
+			b.Observers = append(b.Observers, userID)
+			return true
+		}
+	}
+
+	return false
+}
+
+func BoardsWithoutUser(key string, userID int) []Board {
+	res := []Board{}
+	for _, el := range BoardsArray {
+		if strings.Contains(el.board.Name, key) && !AvailableToUser(userID, el.board.ID) {
+			res = append(res, *el.board)
+		}
+	}
+
+	return res
+}
+
+func NewDrawing(boardID int, points []Point) {
+	if b := pointerByID(boardID); b != nil {
+		b.History = append(b.History, points)
+	}
 }

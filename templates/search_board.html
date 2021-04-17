@@ -10,13 +10,13 @@
 
 <body>
     <form method="POST">
-        <input type="text" placeholder="Название доски" />
+        <p><input type="text" name="key" /></p>
         <button type="submit">Искать</button>
     </form>
     <ul>
         {{ range . }}
         <li>
-            <a href="/board{{ .ID }}">
+            <a href="/join-board{{ .ID }}">
                 <p>{{ .Name }}</p>
             </a>
         </li>

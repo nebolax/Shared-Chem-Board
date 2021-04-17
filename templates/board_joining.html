@@ -9,9 +9,9 @@
 </head>
 
 <body>
-    <p>Доска: {{ . }}</p>
+    <p>Доска: {{ .Name }}</p>
     <form method="POST">
-        <p>Пароль от доски: <input type="text" /></p>
+        <p>Пароль от доски: <input type="text" name="pwd" /></p>
         <button type="submit">Войти</button>
     </form>
 </body>
