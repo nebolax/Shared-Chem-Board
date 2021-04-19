@@ -12,17 +12,11 @@
     <div id="app" style="display: block; float: left;">
         <canvas id="canvas" width="100%" height="100%"></canvas>
     </div>
-    <div>
-        {{ if .IsAdmin }}
-        <ul>
-            {{ range .Observers }}
-            <li>
-                <a onclick="changeView({{ .User }})">{{ .User.Login }}</a>
-            </li>
-            {{end}}
-        </ul>
+    <div id="boards-nav">
+
     </div>
 
+    <script type="text/javascript" src="/static/admin_board.js"></script>
     <script type="text/javascript" src="/static/drawing_board.js"></script>
 </body>
 

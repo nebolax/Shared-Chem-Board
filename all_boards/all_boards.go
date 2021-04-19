@@ -44,7 +44,7 @@ func SharedWithUser(userID int) []Board {
 	res := []Board{}
 	for _, el := range BoardsArray {
 		for _, obs := range el.board.Observers {
-			if obs.userID == userID {
+			if obs.UserID == userID {
 				res = append(res, *el.board)
 				break
 			}
@@ -91,7 +91,7 @@ func IsAdmin(userID, boardID int) bool {
 func AddObserver(boardID, userID int, pwd string) bool {
 	if b := pointerByID(boardID); b != nil {
 		if b.Password == pwd {
-			b.Observers = append(b.Observers, Observer{userID: userID})
+			b.Observers = append(b.Observers, Observer{UserID: userID})
 			return true
 		}
 	}

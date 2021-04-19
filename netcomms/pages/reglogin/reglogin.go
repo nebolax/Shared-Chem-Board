@@ -17,6 +17,15 @@ type DBUser struct {
 
 var users []*DBUser
 
+func GetUserByID(userID int) (DBUser, bool) {
+	for _, user := range users {
+		if user.ID == userID {
+			return *user, true
+		}
+	}
+	return DBUser{}, false
+}
+
 func Logout(w http.ResponseWriter, r *http.Request) {
 	session_info.SetUserID(w, r, 0)
 	http.Redirect(w, r, "/", http.StatusSeeOther)

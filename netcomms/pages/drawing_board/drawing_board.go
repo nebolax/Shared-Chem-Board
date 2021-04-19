@@ -3,6 +3,7 @@ package drawing_board
 import (
 	"ChemBoard/all_boards"
 	"ChemBoard/netcomms/connsinc"
+	"ChemBoard/netcomms/pages/reglogin"
 	"ChemBoard/netcomms/session_info"
 	"html/template"
 	"net/http"
@@ -26,15 +27,6 @@ func HandleSockets(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type AdminInfo struct {
-	IsAdmin   bool
-	Observers []all_boards.Observer
-}
-
-type ObserverInfo struct {
-	IsAdmin bool
-}
-
 func Page(w http.ResponseWriter, r *http.Request) {
 	if !session_info.IsUserLoggedIn(r) {
 		http.Redirect(w, r, "login", http.StatusSeeOther)
@@ -42,18 +34,10 @@ func Page(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		boardID, _ := strconv.Atoi(vars["id"])
 		if !all_boards.AvailableToUser(session_info.GetUserID(r), boardID) {
-			http.Redirect(w, r, "/myboards", http.StatusSeeOther)
+			http.Redirect(w, r, "/", http.StatusSeeOther)
 		} else {
-			var info interface{}
-			if all_boards.IsAdmin(session_info.GetUserID(r), boardID) {
-				if b, ok := all_boards.GetByID(boardID); ok {
-					info = AdminInfo{true, b.Observers}
-				}
-			} else {
-				info = ObserverInfo{false}
-			}
-			tmpl, _ := template.ParseFiles("./templates/drawing_board.html")
-			tmpl.Execute(w, info)
+			tmpl, _ := template.ParseFiles("./templates/admin_board.html")
+			tmpl.Execute(w, all_boards.IsAdmin(session_info.GetUserID(r), boardID))
 		}
 	}
 }
@@ -67,6 +51,7 @@ type sockClient struct {
 
 //canvasMessage is a struct
 type canvasMessage struct {
+	Type   string             `json:"type"`
 	Points []all_boards.Point `json:"points"`
 }
 
@@ -77,21 +62,27 @@ type boardPageSetup struct {
 	PersonOffers int       `json:"personOffers"`
 }
 
+type newObserver struct {
+	Type     string `json:"type"`
+	UserID   int    `json:"userID"`
+	UserName string `json:"username"`
+}
+
 var clients = make(map[int]*sockClient)
 
 //SendtoBoardObservers is func
-func SendtoBoardObservers(boardID, originUser int, message interface{}) {
+func SendtoBoardObservers(boardID, originConnID int, message interface{}) {
 	for _, client := range clients {
-		if client.boardID == boardID && client.userID != originUser {
-			sendtoUserDevices(client.userID, message)
+		if client.boardID == boardID {
+			sendtoUserDevices(client.userID, originConnID, message)
 		}
 	}
 }
 
 //sendtoUserDevices is func
-func sendtoUserDevices(userID int, message interface{}) {
+func sendtoUserDevices(userID, originConnID int, message interface{}) {
 	for connID, client := range clients {
-		if client.userID == userID {
+		if client.userID == userID && connID != originConnID {
 			writeSingleMessage(connID, message)
 		}
 	}
@@ -132,20 +123,35 @@ func procIncomingMessages(connID int) {
 		msg, ok := readSingleMessage(connID)
 		if ok {
 			all_boards.NewDrawing(client.boardID, msg.Points)
-			SendtoBoardObservers(client.boardID, client.userID, msg)
+			SendtoBoardObservers(client.boardID, connID, msg)
 		} else {
 			break
 		}
 	}
 }
 
+func IsAdminOnline(boardID int) (int, bool) {
+	for _, cl := range clients {
+		if all_boards.IsAdmin(cl.userID, cl.boardID) {
+			return cl.userID, true
+		}
+	}
+
+	return 0, false
+}
+
 //RegNewBoardObserver is func
 func RegNewBoardObserver(ws *websocket.Conn, boardID, userID int) {
 	connID := connsinc.NewID()
 	clients[connID] = &sockClient{userID: userID, boardID: boardID, sock: ws}
+	if adminID, admOn := IsAdminOnline(boardID); admOn {
+		if user, ok := reglogin.GetUserByID(userID); ok {
+			sendtoUserDevices(adminID, 0, newObserver{"newObserver", userID, user.Login})
+		}
+	}
 	if b, ok := all_boards.GetByID(boardID); ok {
 		for _, p := range b.History {
-			writeSingleMessage(connID, canvasMessage{Points: p})
+			writeSingleMessage(connID, canvasMessage{"points", p})
 		}
 	}
 	go procIncomingMessages(connID)
