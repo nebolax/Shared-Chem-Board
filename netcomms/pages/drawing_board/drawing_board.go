@@ -36,8 +36,14 @@ func Page(w http.ResponseWriter, r *http.Request) {
 		if !all_boards.AvailableToUser(session_info.GetUserID(r), boardID) {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		} else {
-			tmpl, _ := template.ParseFiles("./templates/admin_board.html")
-			tmpl.Execute(w, all_boards.IsAdmin(session_info.GetUserID(r), boardID))
+			var tmpl *template.Template
+			if all_boards.IsAdmin(session_info.GetUserID(r), boardID) {
+				tmpl, _ = template.ParseFiles("./templates/admin_board.html")
+			} else {
+				tmpl, _ = template.ParseFiles("./templates/observer_board.html")
+			}
+
+			tmpl.Execute(w, nil)
 		}
 	}
 }

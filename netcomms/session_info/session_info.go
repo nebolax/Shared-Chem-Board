@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	key   = []byte("chemboard-secret")
+	key   = []byte("chemboard-secre1")
 	store = sessions.NewCookieStore(key)
 )
 
