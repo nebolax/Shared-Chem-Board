@@ -1,7 +1,7 @@
 package all_boards
 
 import (
-	"ChemBoard/all_boards/boardsinc"
+	"ChemBoard/utils/incrementor"
 	"strings"
 	"sync"
 )
@@ -16,7 +16,7 @@ var BoardsArray = []*DataElem{
 //TODO lock mutexes while working + boardsArray chould be private
 
 func CreateBoard(adminID int, name, pwd string) int {
-	nID := boardsinc.NewID()
+	nID := incrementor.Next("boards")
 	board := &Board{nID, adminID, name, pwd, []Observer{}, [][]Point{}}
 	BoardsArray = append(BoardsArray, &DataElem{board, sync.Mutex{}})
 	return nID

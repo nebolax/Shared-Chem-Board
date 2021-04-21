@@ -1,8 +1,8 @@
-package board_joining
+package boards_utils
 
 import (
 	"ChemBoard/all_boards"
-	"ChemBoard/netcomms/session_info"
+	"ChemBoard/netcomms/pages/account_logic"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -11,27 +11,27 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func Page(w http.ResponseWriter, r *http.Request) {
-	if !session_info.IsUserLoggedIn(r) {
+func JoinBoardPage(w http.ResponseWriter, r *http.Request) {
+	if !account_logic.IsUserLoggedIn(r) {
 		http.Redirect(w, r, "login", http.StatusSeeOther)
 	} else {
 		vars := mux.Vars(r)
 		boardID, _ := strconv.Atoi(vars["id"])
-		tmpl, _ := template.ParseFiles("./templates/board_joining.html")
+		tmpl, _ := template.ParseFiles("./static/boards_utils/board_joining.html")
 		b, _ := all_boards.GetByID(boardID)
 		tmpl.Execute(w, b)
 	}
 }
 
-func ProcJoining(w http.ResponseWriter, r *http.Request) {
-	if !session_info.IsUserLoggedIn(r) {
+func ProcBoardJoining(w http.ResponseWriter, r *http.Request) {
+	if !account_logic.IsUserLoggedIn(r) {
 		http.Redirect(w, r, "login", http.StatusSeeOther)
 	} else {
 		r.ParseForm()
 		inpPwd := r.PostForm.Get("pwd")
 		vars := mux.Vars(r)
 		boardID, _ := strconv.Atoi(vars["id"])
-		if all_boards.AddObserver(boardID, session_info.GetUserID(r), inpPwd) {
+		if all_boards.AddObserver(boardID, account_logic.GetUserID(r), inpPwd) {
 			http.Redirect(w, r, fmt.Sprintf("/board%d", boardID), http.StatusSeeOther)
 		}
 	}

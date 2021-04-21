@@ -1,10 +1,9 @@
-package drawing_board
+package board_page
 
 import (
 	"ChemBoard/all_boards"
-	"ChemBoard/netcomms/connsinc"
-	"ChemBoard/netcomms/pages/reglogin"
-	"ChemBoard/netcomms/session_info"
+	"ChemBoard/netcomms/pages/account_logic"
+	"ChemBoard/utils/incrementor"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -22,25 +21,25 @@ func HandleSockets(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		boardID, _ := strconv.Atoi(vars["id"])
 		if board, ok := all_boards.GetByID(boardID); ok {
-			RegNewBoardObserver(ws, board.ID, session_info.GetUserID(r))
+			RegNewBoardObserver(ws, board.ID, account_logic.GetUserID(r))
 		}
 	}
 }
 
 func Page(w http.ResponseWriter, r *http.Request) {
-	if !session_info.IsUserLoggedIn(r) {
+	if !account_logic.IsUserLoggedIn(r) {
 		http.Redirect(w, r, "login", http.StatusSeeOther)
 	} else {
 		vars := mux.Vars(r)
 		boardID, _ := strconv.Atoi(vars["id"])
-		if !all_boards.AvailableToUser(session_info.GetUserID(r), boardID) {
+		if !all_boards.AvailableToUser(account_logic.GetUserID(r), boardID) {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		} else {
 			var tmpl *template.Template
-			if all_boards.IsAdmin(session_info.GetUserID(r), boardID) {
-				tmpl, _ = template.ParseFiles("./templates/admin_board.html")
+			if all_boards.IsAdmin(account_logic.GetUserID(r), boardID) {
+				tmpl, _ = template.ParseFiles("./static/board_page/admin_board.html")
 			} else {
-				tmpl, _ = template.ParseFiles("./templates/observer_board.html")
+				tmpl, _ = template.ParseFiles("./static/board_page/observer_board.html")
 			}
 
 			tmpl.Execute(w, nil)
@@ -148,10 +147,10 @@ func IsAdminOnline(boardID int) (int, bool) {
 
 //RegNewBoardObserver is func
 func RegNewBoardObserver(ws *websocket.Conn, boardID, userID int) {
-	connID := connsinc.NewID()
+	connID := incrementor.Next("conns")
 	clients[connID] = &sockClient{userID: userID, boardID: boardID, sock: ws}
 	if adminID, admOn := IsAdminOnline(boardID); admOn {
-		if user, ok := reglogin.GetUserByID(userID); ok {
+		if user, ok := account_logic.GetUserByID(userID); ok {
 			sendtoUserDevices(adminID, 0, newObserver{"newObserver", userID, user.Login})
 		}
 	}

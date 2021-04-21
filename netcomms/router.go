@@ -1,17 +1,10 @@
 package netcomms
 
 import (
-	"ChemBoard/netcomms/pages/account_settings"
-	"ChemBoard/netcomms/pages/available_boards"
-	"ChemBoard/netcomms/pages/board_creation"
-	"ChemBoard/netcomms/pages/board_joining"
-	"ChemBoard/netcomms/pages/change_password"
-	"ChemBoard/netcomms/pages/drawing_board"
-	"ChemBoard/netcomms/pages/landing"
-	"ChemBoard/netcomms/pages/myboards"
-	"ChemBoard/netcomms/pages/personal_home"
-	"ChemBoard/netcomms/pages/reglogin"
-	"ChemBoard/netcomms/pages/search_board"
+	"ChemBoard/netcomms/pages/account_logic"
+	"ChemBoard/netcomms/pages/board_page"
+	"ChemBoard/netcomms/pages/boards_utils"
+	"ChemBoard/netcomms/pages/general_pages"
 	"log"
 	"net/http"
 
@@ -19,38 +12,38 @@ import (
 )
 
 func setupRoutes(router *mux.Router) {
-	router.HandleFunc("/", landing.Page)
-	router.HandleFunc("/board{id:[0-9]+}", drawing_board.Page)
+	router.HandleFunc("/", general_pages.LandingPage)
+	router.HandleFunc("/board{id:[0-9]+}", board_page.Page)
 
-	router.HandleFunc("/login", reglogin.LoginPage).Methods("GET")
-	router.HandleFunc("/register", reglogin.RegisterPage).Methods("GET")
-	router.HandleFunc("/login", reglogin.ProcLogin).Methods("POST")
-	router.HandleFunc("/register", reglogin.ProcRegister).Methods("POST")
-	router.HandleFunc("/logout", reglogin.Logout)
+	router.HandleFunc("/login", account_logic.LoginPage).Methods("GET")
+	router.HandleFunc("/register", account_logic.RegisterPage).Methods("GET")
+	router.HandleFunc("/login", account_logic.ProcLogin).Methods("POST")
+	router.HandleFunc("/register", account_logic.ProcRegister).Methods("POST")
+	router.HandleFunc("/logout", account_logic.Logout)
 
-	router.HandleFunc("/shared-with-me", available_boards.Page)
-	router.HandleFunc("/myboards", myboards.Page)
-	router.HandleFunc("/home", personal_home.Page)
-	router.HandleFunc("/account-settings", account_settings.Page)
-	router.HandleFunc("/change-password", change_password.Page)
+	router.HandleFunc("/shared-with-me", boards_utils.AvailableBoardsPage)
+	router.HandleFunc("/myboards", boards_utils.MyboardsPage)
+	router.HandleFunc("/home", general_pages.PersonalHomePage)
+	router.HandleFunc("/account-settings", account_logic.AccSettingsPage)
+	router.HandleFunc("/change-password", account_logic.ChangePasswordPage)
 
-	router.HandleFunc("/newboard", board_creation.Page).Methods("GET")
-	router.HandleFunc("/newboard", board_creation.ProcCreation).Methods("POST")
+	router.HandleFunc("/newboard", boards_utils.CreateBoardPage).Methods("GET")
+	router.HandleFunc("/newboard", boards_utils.ProcBoardCreation).Methods("POST")
 
-	router.HandleFunc("/search-board", search_board.Page).Methods("GET")
-	router.HandleFunc("/search-board", search_board.ProcSearching).Methods("POST")
+	router.HandleFunc("/search-board", boards_utils.SearchBoardPage).Methods("GET")
+	router.HandleFunc("/search-board", boards_utils.ProcBoardSearching).Methods("POST")
 
-	router.HandleFunc("/join-board{id:[0-9]+}", board_joining.Page).Methods("GET")
-	router.HandleFunc("/join-board{id:[0-9]+}", board_joining.ProcJoining).Methods("POST")
+	router.HandleFunc("/join-board{id:[0-9]+}", boards_utils.JoinBoardPage).Methods("GET")
+	router.HandleFunc("/join-board{id:[0-9]+}", boards_utils.ProcBoardJoining).Methods("POST")
 }
 
 func StartServer() {
 	router := mux.NewRouter().StrictSlash(true)
-	router.PathPrefix("/static/").Handler(http.StripPrefix("/static", http.FileServer(http.Dir("./templates"))))
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static", http.FileServer(http.Dir("./static"))))
 
 	setupRoutes(router)
 
-	router.HandleFunc("/ws/board{id:[0-9]+}", drawing_board.HandleSockets)
+	router.HandleFunc("/ws/board{id:[0-9]+}", board_page.HandleSockets)
 	http.Handle("/", router)
 
 	log.Println("starting http server at port 8090")

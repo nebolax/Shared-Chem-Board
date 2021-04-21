@@ -1,9 +1,8 @@
-package reglogin
+package account_logic
 
 import (
-	"ChemBoard/netcomms/pages/reglogin/usersinc"
-	"ChemBoard/netcomms/session_info"
-	"ChemBoard/status"
+	"ChemBoard/utils/incrementor"
+	"ChemBoard/utils/status"
 	"html/template"
 	"net/http"
 )
@@ -27,7 +26,7 @@ func GetUserByID(userID int) (DBUser, bool) {
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
-	session_info.SetUserID(w, r, 0)
+	SetUserID(w, r, 0)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
@@ -39,16 +38,16 @@ func ProcRegister(w http.ResponseWriter, r *http.Request) {
 	id, cs := RegUser(inpLogin, inpEmail, inpPwd)
 	switch cs {
 	case status.OK:
-		session_info.SetUserID(w, r, id)
+		SetUserID(w, r, id)
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	case status.UserAlreadyExists:
-		tmpl, _ := template.ParseFiles("./templates/register.html")
+		tmpl, _ := template.ParseFiles("./static/account_logic/register.html")
 		tmpl.Execute(w, "User already exists")
 	}
 }
 
 func RegisterPage(w http.ResponseWriter, r *http.Request) {
-	tmpl, _ := template.ParseFiles("./templates/register.html")
+	tmpl, _ := template.ParseFiles("./static/account_logic/register.html")
 	tmpl.Execute(w, "")
 }
 
@@ -57,10 +56,10 @@ func ProcLogin(w http.ResponseWriter, r *http.Request) {
 	inpLogin := r.PostForm.Get("login")
 	inpPwd := r.PostForm.Get("password")
 	id, cs := LoginUser(inpLogin, inpPwd)
-	tmpl, _ := template.ParseFiles("./templates/login.html")
+	tmpl, _ := template.ParseFiles("./static/account_logic/login.html")
 	switch cs {
 	case status.OK:
-		session_info.SetUserID(w, r, id)
+		SetUserID(w, r, id)
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	case status.NoSuchUser:
 		tmpl.Execute(w, "user does not exist")
@@ -70,7 +69,7 @@ func ProcLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginPage(w http.ResponseWriter, r *http.Request) {
-	tmpl, _ := template.ParseFiles("./templates/login.html")
+	tmpl, _ := template.ParseFiles("./static/account_logic/login.html")
 	tmpl.Execute(w, "")
 }
 
@@ -79,7 +78,7 @@ func RegUser(login, email, pwd string) (int, status.StatusCode) {
 	if userFromDB(login) != nil || userFromDB(email) != nil {
 		return 0, status.UserAlreadyExists
 	}
-	id := usersinc.NewID()
+	id := incrementor.Next("users")
 	user := &DBUser{id, login, email, pwd}
 	users = append(users, user)
 	return id, status.OK

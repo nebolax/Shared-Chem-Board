@@ -1,7 +1,7 @@
-package session_info
+package account_logic
 
 import (
-	"ChemBoard/status"
+	"ChemBoard/utils/status"
 	"net/http"
 
 	"github.com/gorilla/sessions"
