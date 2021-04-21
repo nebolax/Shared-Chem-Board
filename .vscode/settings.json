@@ -1,0 +1,7 @@
+{
+    "files.exclude": {
+        "tsconfig.json": false,
+        "go.sum": true,
+        "go.mod": true
+    }
+}
