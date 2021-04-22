@@ -1,4 +1,6 @@
-function msgParser(board, e) {
+module admin_board {
+
+function msgParser(board: AdminBoard, e: MessageEvent) {
     console.log("r")
     let msg = JSON.parse(e.data)
     if (msg.type == "points") {
@@ -13,3 +15,4 @@ let board = new AdminBoard(msgParser)
 
 let e = document.createElement("div")
 e.innerHTML = "<p>Hi there</p>"
+}

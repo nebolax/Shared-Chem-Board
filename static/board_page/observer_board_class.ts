@@ -1,20 +1,22 @@
 class ObserverBoard extends DrawingBoard {
-    constructor(msgParser) {
-        super(msgParser)
-        this.msgParser = msgParser
+    constructor(msgParser: (b: ObserverBoard, e: MessageEvent) => void) {
+        super()
+        this.msgParser = function(b, e) {
+            msgParser(b as ObserverBoard, e)
+        }
         this.isDrawable = false
     }
-    mousedown(e) {
+    mousedown(e: MouseEvent) {
         if (this.isDrawable) {
             super.mousedown(e)
         }
     }
-    mousemove(e) {
+    mousemove(e: MouseEvent) {
         if (this.isDrawable) {
             super.mousemove(e)
         }
     }
-    mouseup(e) {
+    mouseup(e: MouseEvent) {
         if (this.isDrawable) {
             super.mouseup(e)
         }

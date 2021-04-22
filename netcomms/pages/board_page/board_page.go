@@ -156,6 +156,7 @@ func RegNewBoardObserver(ws *websocket.Conn, boardID, userID int) {
 	}
 	if b, ok := all_boards.GetByID(boardID); ok {
 		for _, p := range b.History {
+			println(p)
 			writeSingleMessage(connID, canvasMessage{"points", p})
 		}
 	}

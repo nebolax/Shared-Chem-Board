@@ -1,4 +1,23 @@
+class Point {
+    x: number = 0;
+    y: number = 0;
+}
+
 class DrawingBoard {
+    ws: WebSocket;
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+
+    drawing: boolean;
+    x: number;
+    y: number;
+    sendBuf: Point[];
+    isDrawable: boolean;
+
+    msgParser: (b: DrawingBoard, e: MessageEvent) => void = function() {
+        console.log("from default parser")
+    };
+
     constructor() {
         this.ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname)
 
@@ -8,8 +27,8 @@ class DrawingBoard {
         this.drawing = false
         this.x = 0
         this.y = 0
-        this.canvas = document.getElementById('canvas')
-        this.ctx = canvas.getContext('2d')
+        this.canvas = document.getElementById('canvas') as HTMLCanvasElement
+        this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D
         this.canvas.width = 500
         this.canvas.height = 500
         this.sendBuf = []
@@ -24,10 +43,7 @@ class DrawingBoard {
         this.sendBuf = []
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
-    msgParser() {
-        console.log("from default parser")
-    }
-    mousedown(e) {
+    mousedown(e: MouseEvent) {
         this.x = e.offsetX
         this.y = e.offsetY
         this.drawing = true
@@ -37,7 +53,7 @@ class DrawingBoard {
         })
         this.checkBuf()
     }
-    mousemove(e) {
+    mousemove(e: MouseEvent) {
         if (this.drawing === true) {
             this.drawLine(this.x, this.y, e.offsetX, e.offsetY)
             this.x = e.offsetX
@@ -49,7 +65,7 @@ class DrawingBoard {
             this.checkBuf()
         }
     }
-    mouseup(e) {
+    mouseup(e: MouseEvent) {
         if (this.drawing === true) {
             this.drawLine(this.x, this.y, e.offsetX, e.offsetY)
             this.sendBuf.push({
@@ -68,7 +84,7 @@ class DrawingBoard {
         }
     }
 
-    drawPackage(points) {
+    drawPackage(points: Point[]) {
         for (let i = 0; i < points.length - 1; i++) {
             this.drawLine(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y)
         }
@@ -88,7 +104,7 @@ class DrawingBoard {
             this.sendPoints()
         }
     }
-    drawLine(x1, y1, x2, y2) {
+    drawLine(x1: number, y1: number, x2: number, y2: number) {
         this.ctx.beginPath()
         this.ctx.strokeStyle = 'black'
         this.ctx.lineWidth = 1

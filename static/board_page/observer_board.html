@@ -14,18 +14,19 @@
     </div>
     <div>
         <div>
-            <input onclick="switchBoard(1)" type="radio" id="general-board" name="board-switcher" value="general" checked>
+            <input type="radio" id="general-board" name="board-switcher" value="general" checked>
             <label for="general">Общая доска</label>
         </div>
         <div>
-            <input onclick="switchBoard(2)" type="radio" id="personal-board" name="board-switcher" value="personal">
+            <input type="radio" id="personal-board" name="board-switcher" value="personal">
             <label for="personal">Личная доска</label>
         </div>
     </div>
 
-    <script type="text/javascript" src="/static/board_page/drawing_board.js"></script>
-    <script type="text/javascript" src="/static/board_page/observer_board_class.js"></script>
-    <script type="text/javascript" src="/static/board_page/observer_board.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.slim.js" integrity="sha256-HwWONEZrpuoh951cQD1ov2HUK5zA5DwJ1DNUXaM6FsY=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="/static/js/basic_board_class.js"></script>
+    <script type="text/javascript" src="/static/js/observer_board_class.js"></script>
+    <script type="text/javascript" src="/static/js/observer_board.js"></script>
 </body>
 
 </html>
