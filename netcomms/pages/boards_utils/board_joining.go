@@ -18,7 +18,7 @@ func JoinBoardPage(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		boardID, _ := strconv.Atoi(vars["id"])
 		tmpl, _ := template.ParseFiles("./static/boards_utils/board_joining.html")
-		b, _ := all_boards.GetByID(boardID)
+		b, _ := all_boards.BoardByID(boardID)
 		tmpl.Execute(w, b)
 	}
 }
