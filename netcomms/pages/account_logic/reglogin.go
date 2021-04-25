@@ -39,6 +39,7 @@ func ProcRegister(w http.ResponseWriter, r *http.Request) {
 	switch cs {
 	case status.OK:
 		SetUserID(w, r, id)
+		SetUserInfo(w, r, map[interface{}]interface{}{"login": inpLogin, "email": inpEmail})
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	case status.UserAlreadyExists:
 		tmpl, _ := template.ParseFiles("./static/account_logic/register.html")
@@ -53,13 +54,15 @@ func RegisterPage(w http.ResponseWriter, r *http.Request) {
 
 func ProcLogin(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	inpLogin := r.PostForm.Get("login")
+	inpLogmail := r.PostForm.Get("login")
 	inpPwd := r.PostForm.Get("password")
-	id, cs := LoginUser(inpLogin, inpPwd)
+	id, cs := LoginUser(inpLogmail, inpPwd)
 	tmpl, _ := template.ParseFiles("./static/account_logic/login.html")
 	switch cs {
 	case status.OK:
 		SetUserID(w, r, id)
+		u := userFromDB(inpLogmail)
+		SetUserInfo(w, r, map[interface{}]interface{}{"login": u.Login, "email": u.Email})
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	case status.NoSuchUser:
 		tmpl.Execute(w, "user does not exist")

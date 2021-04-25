@@ -9,11 +9,12 @@ function initPage() {
     })
 }
 
-function msgParser(board: ObserverBoard, e: MessageEvent) {
-    console.log("r")
+function msgParser(b: ObserverBoard, e: MessageEvent) {
     let msg = JSON.parse(e.data)
-    if (msg.type == "points") {
-        board.drawPackage(msg.points)
+    switch(msg.type) {
+    case MsgTypes.Points:
+        board.drawPackage(msg.data.points)
+        break;
     }
 }
 

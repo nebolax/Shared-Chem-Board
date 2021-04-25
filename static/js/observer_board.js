@@ -9,11 +9,12 @@ var observer_board;
             switchBoard(2);
         });
     }
-    function msgParser(board, e) {
-        console.log("r");
+    function msgParser(b, e) {
         var msg = JSON.parse(e.data);
-        if (msg.type == "points") {
-            board.drawPackage(msg.points);
+        switch (msg.type) {
+            case MsgTypes.Points:
+                board.drawPackage(msg.data.points);
+                break;
         }
     }
     function switchBoard(id) {

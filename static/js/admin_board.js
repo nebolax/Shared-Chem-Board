@@ -8,12 +8,19 @@ var admin_board;
                 board.drawPackage(msg.data.points);
                 break;
             case MsgTypes.ObsStat:
-                var clone = $("#observer-bar").clone();
-                clone.attr("id", "user" + msg.userID);
-                clone.html(msg.username);
-                $("observers-nav").append(clone);
+                msg = msg.data;
+                var clone = $("#view0").clone();
+                clone.attr("id", "view" + msg.userID);
+                clone.find("#chviewBtn").html(msg.username);
+                clone.find("#chviewBtn").on("click", switchView);
+                $("#observers-nav").append(clone);
                 break;
         }
     }
+    function switchView(e) {
+        var nview = +e.target.parentElement.id.slice(4);
+        board.toPersonal(nview);
+    }
     var board = new AdminBoard(msgParser);
+    $("#view0").find("#chviewBtn").on("click", switchView);
 })(admin_board || (admin_board = {}));

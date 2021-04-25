@@ -19,14 +19,14 @@ func HandleSockets(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		boardID, _ := strconv.Atoi(vars["id"])
 		if board, ok := all_boards.BoardByID(boardID); ok {
-			regNewBoardObserver(ws, board.ID, account_logic.GetUserID(r))
+			regNewBoardObserver(r, ws, board.ID, account_logic.GetUserID(r))
 		}
 	}
 }
 
 func Page(w http.ResponseWriter, r *http.Request) {
 	if !account_logic.IsUserLoggedIn(r) {
-		http.Redirect(w, r, "login", http.StatusSeeOther)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	} else {
 		vars := mux.Vars(r)
 		boardID, _ := strconv.Atoi(vars["id"])

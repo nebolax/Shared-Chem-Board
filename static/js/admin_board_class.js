@@ -24,18 +24,23 @@ var AdminBoard = /** @class */ (function (_super) {
         };
         return _this;
     }
-    AdminBoard.prototype.toPersonal = function (userID) {
+    AdminBoard.prototype.toPersonal = function (viewID) {
         _super.prototype.clear.call(this);
+        console.log(viewID);
         this.ws.send(JSON.stringify({
-            "type": "chview",
-            "nview": userID
+            type: MsgTypes.Chview,
+            data: {
+                nview: viewID
+            }
         }));
     };
     AdminBoard.prototype.toGeneral = function () {
         _super.prototype.clear.call(this);
         this.ws.send(JSON.stringify({
-            "type": "chview",
-            "nview": 0
+            type: MsgTypes.Chview,
+            data: {
+                nview: 0
+            }
         }));
     };
     return AdminBoard;

@@ -2,7 +2,6 @@ package board_page
 
 import (
 	"ChemBoard/all_boards"
-	"fmt"
 )
 
 var clients = make(map[int]sockClient)
@@ -27,13 +26,15 @@ func newDrawing(boardID, viewID, exceptConn int, msg pointsMSG) {
 	all_boards.NewDrawing(boardID, viewID, msg.Points)
 
 	for _, cl := range clients {
-		if cl.isAdmin() {
-			if cl.(adminClient).dview == viewID {
-				sendtoUserDevices(cl.userID(), exceptConn, msg)
-			}
-		} else {
-			if (!cl.(observerClient).dview && viewID == 0) || (cl.(observerClient).dview && viewID == cl.(observerClient).duserID) {
-				sendtoUserDevices(cl.userID(), exceptConn, msg)
+		if cl.boardID() == boardID {
+			if cl.isAdmin() {
+				if cl.(adminClient).dview == viewID {
+					sendtoUserDevices(cl.userID(), exceptConn, msg)
+				}
+			} else {
+				if (!cl.(observerClient).dview && viewID == 0) || (cl.(observerClient).dview && viewID == cl.(observerClient).duserID) {
+					sendtoUserDevices(cl.userID(), exceptConn, msg)
+				}
 			}
 		}
 	}
@@ -62,7 +63,6 @@ func writeSingleMessage(connID int, msg interface{}) {
 func delClient(connID int) {
 	clients[connID].sock().Close()
 	delete(clients, connID)
-	fmt.Println("deleting client")
 }
 
 func readSingleMessage(connID int) (interface{}, bool) {
@@ -70,7 +70,6 @@ func readSingleMessage(connID int) (interface{}, bool) {
 	err := clients[connID].sock().ReadJSON(&msg)
 	if err != nil {
 		delClient(connID)
-		println(err.Error())
 		return 0, false
 	}
 	return decodeMessage(msg)

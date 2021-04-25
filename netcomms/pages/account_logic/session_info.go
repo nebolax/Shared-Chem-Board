@@ -1,22 +1,28 @@
 package account_logic
 
 import (
-	"ChemBoard/utils/status"
 	"net/http"
 
 	"github.com/gorilla/sessions"
 )
 
 var (
-	key   = []byte("chemboard-secre1")
+	key   = []byte("chemboard-secre4")
 	store = sessions.NewCookieStore(key)
 )
 
-//GetUserInfo is func
-func GetUserInfo(r *http.Request) (int, status.StatusCode) {
-	id := GetUserID(r)
+func SetUserInfo(w http.ResponseWriter, r *http.Request, info map[interface{}]interface{}) {
+	session, _ := store.Get(r, "user-info")
+	for key, val := range info {
+		session.Values[key] = val
+	}
+	session.Save(r, w)
+}
 
-	return id, status.OK
+//GetUserInfo is func
+func GetUserInfo(r *http.Request) map[interface{}]interface{} {
+	session, _ := store.Get(r, "user-info")
+	return session.Values
 }
 
 //IsUserLoggedIn is func

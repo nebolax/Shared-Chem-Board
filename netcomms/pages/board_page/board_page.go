@@ -4,6 +4,7 @@ import (
 	"ChemBoard/all_boards"
 	"ChemBoard/netcomms/pages/account_logic"
 	"ChemBoard/utils/incrementor"
+	"net/http"
 	"reflect"
 	"sync"
 
@@ -11,8 +12,10 @@ import (
 )
 
 func procIncomingMessages(connID int) {
-	cl := clients[connID]
+	ar := clients
+	_ = ar
 	for {
+		cl := clients[connID]
 		msg, ok := readSingleMessage(connID)
 		if ok {
 			switch typesMap[reflect.TypeOf(msg)] {
@@ -29,7 +32,7 @@ func procIncomingMessages(connID int) {
 					nc.dview = tms.NView == 1
 					clients[connID] = nc
 				}
-				sendHistory(connID, cl.boardID(), curView(cl))
+				sendHistory(connID, cl.boardID(), curView(clients[connID]))
 			}
 		} else {
 			break
@@ -59,16 +62,15 @@ func isAdminOnline(boardID int) (int, bool) {
 	return 0, false
 }
 
-func regNewBoardObserver(ws *websocket.Conn, boardID, userID int) {
+func regNewBoardObserver(r *http.Request, ws *websocket.Conn, boardID, userID int) {
 	connID := incrementor.Next("conns")
 	if all_boards.IsAdmin(userID, boardID) {
 		clients[connID] = adminClient{boardID, userID, 0, ws, &sync.Mutex{}}
 	} else {
 		clients[connID] = observerClient{boardID, userID, false, ws, &sync.Mutex{}}
 		if adminID, admOn := isAdminOnline(boardID); admOn {
-			if user, ok := account_logic.GetUserByID(userID); ok {
-				sendtoUserDevices(adminID, 0, obsStatMSG{userID, user.Login})
-			}
+			uinfo := account_logic.GetUserInfo(r)
+			sendtoUserDevices(adminID, 0, obsStatMSG{userID, uinfo["login"].(string)})
 		}
 	}
 	sendHistory(connID, boardID, 0)

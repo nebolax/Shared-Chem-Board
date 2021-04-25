@@ -8,19 +8,24 @@ class AdminBoard extends DrawingBoard {
         }
     }
 
-    toPersonal(userID: number) {
+    toPersonal(viewID: number) {
         super.clear()
+        console.log(viewID)
         this.ws.send(JSON.stringify({
-            "type": "chview",
-            "nview": userID
+            type: MsgTypes.Chview,
+            data: {
+                nview: viewID
+            }
         }))
     }
 
     toGeneral() {
         super.clear()
         this.ws.send(JSON.stringify({
-            "type": "chview",
-            "nview": 0
+            type: MsgTypes.Chview,
+            data: {
+                nview: 0
+            }
         }))
     }
 }
