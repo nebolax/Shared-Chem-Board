@@ -64,7 +64,11 @@ type pointsMSG struct {
 type chviewMSG struct {
 	NView int `json:"nview"`
 }
-type obsStatMSG struct {
-	UserID   int    `json:"userID"`
+
+type allObsStatMSG struct {
+	Info []singleObsInfo `json:"allObsInfo"`
+}
+type singleObsInfo struct {
+	UserID   int    `json:"userid"`
 	UserName string `json:"username"`
 }

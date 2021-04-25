@@ -62,6 +62,22 @@ func isAdminOnline(boardID int) (int, bool) {
 	return 0, false
 }
 
+func curBoardObservers(boardID int) []singleObsInfo {
+	ids := map[int]bool{}
+	for _, cl := range clients {
+		if cl.boardID() == boardID && !cl.isAdmin() {
+			if _, ok := ids[cl.userID()]; !ok {
+				ids[cl.userID()] = true
+			}
+		}
+	}
+	res := []singleObsInfo{}
+	for id, _ := range ids {
+		res = append(res, singleObsInfo{id, account_logic.UserLogin(id)})
+	}
+	return res
+}
+
 func regNewBoardObserver(r *http.Request, ws *websocket.Conn, boardID, userID int) {
 	connID := incrementor.Next("conns")
 	if all_boards.IsAdmin(userID, boardID) {
@@ -69,8 +85,7 @@ func regNewBoardObserver(r *http.Request, ws *websocket.Conn, boardID, userID in
 	} else {
 		clients[connID] = observerClient{boardID, userID, false, ws, &sync.Mutex{}}
 		if adminID, admOn := isAdminOnline(boardID); admOn {
-			uinfo := account_logic.GetUserInfo(r)
-			sendtoUserDevices(adminID, 0, obsStatMSG{userID, uinfo["login"].(string)})
+			sendtoUserDevices(adminID, 0, allObsStatMSG{curBoardObservers(boardID)})
 		}
 	}
 	sendHistory(connID, boardID, 0)

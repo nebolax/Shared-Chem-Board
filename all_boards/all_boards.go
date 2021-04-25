@@ -140,5 +140,4 @@ func NewDrawing(boardID, viewID int, points []Point) {
 			}
 		}
 	}
-	println()
 }

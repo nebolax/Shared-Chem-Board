@@ -9,18 +9,30 @@ var admin_board;
                 break;
             case MsgTypes.ObsStat:
                 msg = msg.data;
-                var clone = $("#view0").clone();
-                clone.attr("id", "view" + msg.userID);
-                clone.find("#chviewBtn").html(msg.username);
-                clone.find("#chviewBtn").on("click", switchView);
-                $("#observers-nav").append(clone);
+                $("#observers-nav").empty();
+                msg.allObsInfo.forEach(function (el) {
+                    var _a;
+                    var templ = document.getElementById("template-obsname");
+                    var clone = document.importNode(templ.content, true);
+                    var btn = clone.querySelector("#chviewBtn");
+                    btn.addEventListener("click", switchView);
+                    btn.innerHTML = el.username;
+                    btn.id = "view" + el.userid;
+                    (_a = document.getElementById("observers-nav")) === null || _a === void 0 ? void 0 : _a.appendChild(clone);
+                });
                 break;
         }
     }
     function switchView(e) {
-        var nview = +e.target.parentElement.id.slice(4);
-        board.toPersonal(nview);
+        var sourceId = e.target.id;
+        if (sourceId == "general-page") {
+            board.toGeneral();
+        }
+        else {
+            var nview = +sourceId.slice(4);
+            board.toPersonal(nview);
+        }
     }
     var board = new AdminBoard(msgParser);
-    $("#view0").find("#chviewBtn").on("click", switchView);
+    $("#views-nav").find("#general-page").on("click", switchView);
 })(admin_board || (admin_board = {}));

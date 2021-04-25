@@ -8,9 +8,9 @@ import (
 
 var (
 	typesMap = map[reflect.Type]msgType{
-		reflect.TypeOf(pointsMSG{}):  tPoints,
-		reflect.TypeOf(obsStatMSG{}): tObsStat,
-		reflect.TypeOf(chviewMSG{}):  tChview,
+		reflect.TypeOf(pointsMSG{}):     tPoints,
+		reflect.TypeOf(allObsStatMSG{}): tObsStat,
+		reflect.TypeOf(chviewMSG{}):     tChview,
 	}
 )
 

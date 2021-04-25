@@ -109,3 +109,12 @@ func userFromDB(logmail string) *DBUser {
 
 	return nil
 }
+
+func UserLogin(userID int) string {
+	for _, user := range users {
+		if user.ID == userID {
+			return user.Login
+		}
+	}
+	return ""
+}
