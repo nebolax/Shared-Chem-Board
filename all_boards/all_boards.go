@@ -17,7 +17,7 @@ var BoardsArray = []*DataElem{
 
 func CreateBoard(adminID int, name, pwd string) int {
 	nID := incrementor.Next("boards")
-	board := &Board{nID, adminID, name, pwd, []Observer{}, [][]Point{}}
+	board := &Board{nID, adminID, name, pwd, []*Observer{}, [][]Point{}}
 	BoardsArray = append(BoardsArray, &DataElem{board, sync.Mutex{}})
 	return nID
 }
@@ -34,7 +34,7 @@ func BoardByID(id int) (Board, bool) {
 func (b *Board) obspointerByID(userID int) *Observer {
 	for _, obs := range b.Observers {
 		if obs.UserID == userID {
-			return &obs
+			return obs
 		}
 	}
 	return nil
@@ -43,7 +43,7 @@ func (b *Board) obspointerByID(userID int) *Observer {
 func (b Board) ObserverByID(userID int) (Observer, bool) {
 	for _, obs := range b.Observers {
 		if obs.UserID == userID {
-			return obs, true
+			return *obs, true
 		}
 	}
 	return Observer{}, false
@@ -109,7 +109,7 @@ func IsAdmin(userID, boardID int) bool {
 func AddObserver(boardID, userID int, pwd string) bool {
 	if b := pointerByID(boardID); b != nil {
 		if b.Password == pwd {
-			b.Observers = append(b.Observers, Observer{UserID: userID})
+			b.Observers = append(b.Observers, &Observer{userID, [][]Point{}})
 			return true
 		}
 	}
@@ -129,6 +129,8 @@ func BoardsWithoutUser(key string, userID int) []Board {
 }
 
 func NewDrawing(boardID, viewID int, points []Point) {
+	bar := BoardsArray
+	_ = bar
 	if b := pointerByID(boardID); b != nil {
 		if viewID == 0 {
 			b.History = append(b.History, points)
@@ -138,4 +140,5 @@ func NewDrawing(boardID, viewID int, points []Point) {
 			}
 		}
 	}
+	println()
 }
