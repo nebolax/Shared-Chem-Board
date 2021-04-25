@@ -45,13 +45,26 @@ func (cl observerClient) userID() int           { return cl.duserID }
 func (cl observerClient) mu() *sync.Mutex       { return cl.dmu }
 func (cl observerClient) isAdmin() bool         { return false }
 
-type canvasMessage struct {
-	Type   string             `json:"type"`
+type msgType int
+
+const (
+	tPoints  msgType = iota
+	tObsStat msgType = iota
+	tChview  msgType = iota
+)
+
+type anyMSG struct {
+	Type msgType     `json:"type"`
+	Data interface{} `json:"data"`
+}
+type pointsMSG struct {
 	Points []all_boards.Point `json:"points"`
 }
 
-type newObserver struct {
-	Type     string `json:"type"`
+type chviewMSG struct {
+	NView int `json:"nview"`
+}
+type obsStatMSG struct {
 	UserID   int    `json:"userID"`
 	UserName string `json:"username"`
 }

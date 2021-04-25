@@ -27,15 +27,15 @@ var AdminBoard = /** @class */ (function (_super) {
     AdminBoard.prototype.toPersonal = function (userID) {
         _super.prototype.clear.call(this);
         this.ws.send(JSON.stringify({
-            "type": "switchBoard",
-            "userID": userID
+            "type": "chview",
+            "nview": userID
         }));
     };
     AdminBoard.prototype.toGeneral = function () {
         _super.prototype.clear.call(this);
         this.ws.send(JSON.stringify({
-            "type": "switchBoard",
-            "userID": 0
+            "type": "chview",
+            "nview": 0
         }));
     };
     return AdminBoard;

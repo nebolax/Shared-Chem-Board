@@ -9,7 +9,7 @@ type Board struct {
 	Admin     int
 	Name      string
 	Password  string
-	Observers []*Observer
+	Observers []Observer
 	History   [][]Point
 }
 

@@ -11,16 +11,16 @@ class AdminBoard extends DrawingBoard {
     toPersonal(userID: number) {
         super.clear()
         this.ws.send(JSON.stringify({
-            "type": "switchBoard",
-            "userID": userID
+            "type": "chview",
+            "nview": userID
         }))
     }
 
     toGeneral() {
         super.clear()
         this.ws.send(JSON.stringify({
-            "type": "switchBoard",
-            "userID": 0
+            "type": "chview",
+            "nview": 0
         }))
     }
 }

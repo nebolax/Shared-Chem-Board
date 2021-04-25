@@ -4,6 +4,7 @@ import (
 	"ChemBoard/all_boards"
 	"ChemBoard/netcomms/pages/account_logic"
 	"ChemBoard/utils/incrementor"
+	"reflect"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -14,19 +15,36 @@ func procIncomingMessages(connID int) {
 	for {
 		msg, ok := readSingleMessage(connID)
 		if ok {
-			var viewID int
-			if cl.isAdmin() {
-				viewID = cl.(adminClient).dview
-			} else {
-				if !cl.(observerClient).dview {
-					viewID = 0
+			switch typesMap[reflect.TypeOf(msg)] {
+			case tPoints:
+				newDrawing(cl.boardID(), curView(cl), connID, msg.(pointsMSG))
+			case tChview:
+				tms := msg.(chviewMSG)
+				if cl.isAdmin() {
+					nc := cl.(adminClient)
+					nc.dview = tms.NView
+					clients[connID] = nc
 				} else {
-					viewID = cl.userID()
+					nc := cl.(observerClient)
+					nc.dview = tms.NView == 1
+					clients[connID] = nc
 				}
+				sendHistory(connID, cl.boardID(), curView(cl))
 			}
-			newDrawing(cl.boardID(), viewID, connID, msg)
 		} else {
 			break
+		}
+	}
+}
+
+func curView(cl sockClient) int {
+	if cl.isAdmin() {
+		return cl.(adminClient).dview
+	} else {
+		if !cl.(observerClient).dview {
+			return 0
+		} else {
+			return cl.userID()
 		}
 	}
 }
@@ -45,19 +63,15 @@ func regNewBoardObserver(ws *websocket.Conn, boardID, userID int) {
 	connID := incrementor.Next("conns")
 	if all_boards.IsAdmin(userID, boardID) {
 		clients[connID] = adminClient{boardID, userID, 0, ws, &sync.Mutex{}}
-		if b, ok := all_boards.BoardByID(boardID); ok {
-			for _, pack := range b.History {
-				writeSingleMessage(connID, canvasMessage{"points", pack})
-			}
-		}
 	} else {
 		clients[connID] = observerClient{boardID, userID, false, ws, &sync.Mutex{}}
 		if adminID, admOn := isAdminOnline(boardID); admOn {
 			if user, ok := account_logic.GetUserByID(userID); ok {
-				sendtoUserDevices(adminID, 0, newObserver{"newObserver", userID, user.Login})
+				sendtoUserDevices(adminID, 0, obsStatMSG{userID, user.Login})
 			}
 		}
 	}
+	sendHistory(connID, boardID, 0)
 
 	go procIncomingMessages(connID)
 }

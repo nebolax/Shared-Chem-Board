@@ -40,15 +40,19 @@ var ObserverBoard = /** @class */ (function (_super) {
         }
     };
     ObserverBoard.prototype.toGeneralBoard = function () {
+        _super.prototype.clear.call(this);
         this.isDrawable = false;
         this.ws.send(JSON.stringify({
-            "type": "toGeneral"
+            "type": "chview",
+            "nview": 0,
         }));
     };
     ObserverBoard.prototype.toPersonalBoard = function () {
+        _super.prototype.clear.call(this);
         this.isDrawable = true;
         this.ws.send(JSON.stringify({
-            "type": "toPersonal"
+            "type": "chview",
+            "nview": 1,
         }));
     };
     return ObserverBoard;

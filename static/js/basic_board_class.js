@@ -14,7 +14,6 @@ var DrawingBoard = /** @class */ (function () {
         };
         this.ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname);
         this.ws.onmessage = function (e) { _this.msgParser(_this, e); };
-        // this.msgParser = msgParser
         this.drawing = false;
         this.x = 0;
         this.y = 0;
@@ -79,10 +78,11 @@ var DrawingBoard = /** @class */ (function () {
         }
     };
     DrawingBoard.prototype.sendPoints = function () {
-        console.log("s");
         this.ws.send(JSON.stringify({
-            "type": "points",
-            "points": this.sendBuf,
+            type: MsgTypes.Points,
+            data: {
+                points: this.sendBuf,
+            }
         }));
         var pv = this.sendBuf[this.sendBuf.length - 1];
         this.sendBuf = [];
@@ -104,3 +104,9 @@ var DrawingBoard = /** @class */ (function () {
     };
     return DrawingBoard;
 }());
+var MsgTypes;
+(function (MsgTypes) {
+    MsgTypes[MsgTypes["Points"] = 0] = "Points";
+    MsgTypes[MsgTypes["ObsStat"] = 1] = "ObsStat";
+    MsgTypes[MsgTypes["Chview"] = 2] = "Chview";
+})(MsgTypes || (MsgTypes = {}));

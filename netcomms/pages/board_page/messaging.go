@@ -2,30 +2,28 @@ package board_page
 
 import (
 	"ChemBoard/all_boards"
+	"fmt"
 )
 
 var clients = make(map[int]sockClient)
 
-func adminOfBoard(boardID int) *adminClient {
-	for _, cl := range clients {
-		if cl.boardID() == boardID {
-			return cl.(*adminClient)
+func sendHistory(connID, boardID, viewID int) {
+	if b, ok := all_boards.BoardByID(boardID); ok {
+		var hist [][]all_boards.Point
+		if viewID == 0 {
+			hist = b.History
+		} else {
+			if obs, ok := b.ObserverByID(viewID); ok {
+				hist = obs.History
+			}
+		}
+		for _, pack := range hist {
+			writeSingleMessage(connID, pointsMSG{pack})
 		}
 	}
-	return nil
 }
 
-func observersOfBoard(boardID int) []*observerClient {
-	res := []*observerClient{}
-	for _, cl := range clients {
-		if cl.boardID() == boardID {
-			res = append(res, cl.(*observerClient))
-		}
-	}
-	return res
-}
-
-func newDrawing(boardID, viewID, exceptConn int, msg canvasMessage) {
+func newDrawing(boardID, viewID, exceptConn int, msg pointsMSG) {
 	all_boards.NewDrawing(boardID, viewID, msg.Points)
 
 	for _, cl := range clients {
@@ -49,26 +47,31 @@ func sendtoUserDevices(userID, exceptConn int, message interface{}) {
 	}
 }
 
-func writeSingleMessage(connID int, message interface{}) {
+func writeSingleMessage(connID int, msg interface{}) {
 	clients[connID].mu().Lock()
-	err := clients[connID].sock().WriteJSON(message)
-	if err != nil {
-		delClient(connID)
+	defer clients[connID].mu().Unlock()
+
+	if enc, ok := encodeMessage(msg); ok {
+		err := clients[connID].sock().WriteJSON(enc)
+		if err != nil {
+			delClient(connID)
+		}
 	}
-	clients[connID].mu().Unlock()
 }
 
 func delClient(connID int) {
 	clients[connID].sock().Close()
 	delete(clients, connID)
+	fmt.Println("deleting client")
 }
 
-func readSingleMessage(connID int) (canvasMessage, bool) {
-	var msg canvasMessage
+func readSingleMessage(connID int) (interface{}, bool) {
+	var msg anyMSG
 	err := clients[connID].sock().ReadJSON(&msg)
 	if err != nil {
 		delClient(connID)
-		return canvasMessage{}, false
+		println(err.Error())
+		return 0, false
 	}
-	return msg, true
+	return decodeMessage(msg)
 }

@@ -2,17 +2,18 @@
 var admin_board;
 (function (admin_board) {
     function msgParser(board, e) {
-        console.log("r");
         var msg = JSON.parse(e.data);
-        if (msg.type == "points") {
-            board.drawPackage(msg.points);
-        }
-        else if (msg.type == "newObserver") {
-            var el = document.createElement("div");
-            el.innerHTML = "<button></button>";
+        switch (msg.type) {
+            case MsgTypes.Points:
+                board.drawPackage(msg.data.points);
+                break;
+            case MsgTypes.ObsStat:
+                var clone = $("#observer-bar").clone();
+                clone.attr("id", "user" + msg.userID);
+                clone.html(msg.username);
+                $("observers-nav").append(clone);
+                break;
         }
     }
     var board = new AdminBoard(msgParser);
-    var e = document.createElement("div");
-    e.innerHTML = "<p>Hi there</p>";
 })(admin_board || (admin_board = {}));

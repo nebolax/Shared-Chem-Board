@@ -23,15 +23,19 @@ class ObserverBoard extends DrawingBoard {
     }
 
     toGeneralBoard() {
+        super.clear()
         this.isDrawable = false
         this.ws.send(JSON.stringify({
-            "type": "toGeneral"
+            "type": "chview",
+            "nview": 0,
         }))
     }
     toPersonalBoard() {
+        super.clear()
         this.isDrawable = true
         this.ws.send(JSON.stringify({
-            "type": "toPersonal"
+            "type": "chview",
+            "nview": 1,
         }))
     }
 }

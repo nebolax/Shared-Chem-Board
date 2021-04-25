@@ -15,15 +15,13 @@ class DrawingBoard {
     isDrawable: boolean;
 
     msgParser: (b: DrawingBoard, e: MessageEvent) => void = function() {
-        console.log("from default parser")
+        console.log("from default parser") 
     };
 
     constructor() {
         this.ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname)
 
         this.ws.onmessage = (e) => { this.msgParser(this, e) }
-
-        // this.msgParser = msgParser
         this.drawing = false
         this.x = 0
         this.y = 0
@@ -90,10 +88,11 @@ class DrawingBoard {
         }
     }
     sendPoints() {
-        console.log("s")
         this.ws.send(JSON.stringify({
-            "type": "points",
-            "points": this.sendBuf,
+            type: MsgTypes.Points,
+            data: {
+                points: this.sendBuf,
+            }
         }))
         let pv = this.sendBuf[this.sendBuf.length - 1]
         this.sendBuf = []
@@ -114,4 +113,10 @@ class DrawingBoard {
         this.ctx.closePath()
     }
 
+}
+
+enum MsgTypes {
+    Points = 0,
+    ObsStat,
+    Chview,
 }
