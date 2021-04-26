@@ -61,8 +61,10 @@ func writeSingleMessage(connID int, msg interface{}) {
 }
 
 func delClient(connID int) {
+	boardID := clients[connID].boardID()
 	clients[connID].sock().Close()
 	delete(clients, connID)
+	updateObserversList(boardID)
 }
 
 func readSingleMessage(connID int) (interface{}, bool) {

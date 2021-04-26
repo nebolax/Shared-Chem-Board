@@ -62,6 +62,12 @@ func isAdminOnline(boardID int) (int, bool) {
 	return 0, false
 }
 
+func updateObserversList(boardID int) {
+	if adminID, admOn := isAdminOnline(boardID); admOn {
+		sendtoUserDevices(adminID, 0, allObsStatMSG{curBoardObservers(boardID)})
+	}
+}
+
 func curBoardObservers(boardID int) []singleObsInfo {
 	ids := map[int]bool{}
 	for _, cl := range clients {
@@ -84,9 +90,7 @@ func regNewBoardObserver(r *http.Request, ws *websocket.Conn, boardID, userID in
 		clients[connID] = adminClient{boardID, userID, 0, ws, &sync.Mutex{}}
 	} else {
 		clients[connID] = observerClient{boardID, userID, false, ws, &sync.Mutex{}}
-		if adminID, admOn := isAdminOnline(boardID); admOn {
-			sendtoUserDevices(adminID, 0, allObsStatMSG{curBoardObservers(boardID)})
-		}
+		updateObserversList(boardID)
 	}
 	sendHistory(connID, boardID, 0)
 
