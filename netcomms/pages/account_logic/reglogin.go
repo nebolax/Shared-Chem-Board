@@ -7,19 +7,24 @@ import (
 	"net/http"
 )
 
+//TODO user info should be taken from database, not from coockies
+
+var (
+	passwords = make(map[int]string)
+)
+
 type DBUser struct {
-	ID       int
-	Login    string
-	Email    string
-	Password string
+	ID    int    `json:"id"`
+	Login string `json:"login"`
+	Email string `json:"email"`
 }
 
-var users []*DBUser
+var users []DBUser
 
 func GetUserByID(userID int) (DBUser, bool) {
 	for _, user := range users {
 		if user.ID == userID {
-			return *user, true
+			return user, true
 		}
 	}
 	return DBUser{}, false
@@ -56,13 +61,12 @@ func ProcLogin(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	inpLogmail := r.PostForm.Get("login")
 	inpPwd := r.PostForm.Get("password")
-	id, cs := LoginUser(inpLogmail, inpPwd)
+	user, cs := LoginUser(inpLogmail, inpPwd)
 	tmpl, _ := template.ParseFiles("./static/account_logic/login.html")
 	switch cs {
 	case status.OK:
-		SetUserID(w, r, id)
-		u := userFromDB(inpLogmail)
-		SetUserInfo(w, r, map[interface{}]interface{}{"login": u.Login, "email": u.Email})
+		SetUserID(w, r, user.ID)
+		SetUserInfo(w, r, map[interface{}]interface{}{"login": user.Login, "email": user.Email})
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	case status.NoSuchUser:
 		tmpl.Execute(w, "user does not exist")
@@ -78,36 +82,39 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 
 //RegUser is func
 func RegUser(login, email, pwd string) (int, status.StatusCode) {
-	if userFromDB(login) != nil || userFromDB(email) != nil {
+	_, exbylog := userFromDB(login)
+	_, exbymemail := userFromDB(email)
+	if exbylog || exbymemail {
 		return 0, status.UserAlreadyExists
 	}
 	id := incrementor.Next("users")
-	user := &DBUser{id, login, email, pwd}
+	user := DBUser{id, login, email}
+	passwords[id] = pwd
 	users = append(users, user)
 	return id, status.OK
 }
 
 //LoginUser is func
-func LoginUser(logmail, inpPwd string) (int, status.StatusCode) {
-	if user := userFromDB(logmail); user == nil {
-		return 0, status.NoSuchUser
+func LoginUser(logmail, inpPwd string) (DBUser, status.StatusCode) {
+	if user, ok := userFromDB(logmail); ok {
+		return DBUser{}, status.NoSuchUser
 	} else {
-		if user.Password != inpPwd {
-			return 0, status.IncorrectPassword
+		if passwords[user.ID] != inpPwd {
+			return DBUser{}, status.IncorrectPassword
 		} else {
-			return user.ID, status.OK
+			return user, status.OK
 		}
 	}
 }
 
-func userFromDB(logmail string) *DBUser {
+func userFromDB(logmail string) (DBUser, bool) {
 	for _, user := range users {
 		if user.Login == logmail || user.Email == logmail {
-			return user
+			return user, true
 		}
 	}
 
-	return nil
+	return DBUser{}, false
 }
 
 func UserLogin(userID int) string {

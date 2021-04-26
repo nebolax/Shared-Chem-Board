@@ -1,4 +1,19 @@
 "use strict";
+var Observer = /** @class */ (function () {
+    function Observer(userid, username) {
+        this.userid = userid;
+        this.username = username;
+    }
+    return Observer;
+}());
+var User = /** @class */ (function () {
+    function User(msg) {
+        this.id = msg.id;
+        this.login = msg.login;
+        this.email = msg.email;
+    }
+    return User;
+}());
 var ChatMsgContent = /** @class */ (function () {
     function ChatMsgContent(msgContent) {
         this.text = msgContent.text;
@@ -13,12 +28,18 @@ var TimeStamp = /** @class */ (function () {
         this.hour = msgStamp.hour;
         this.minute = msgStamp.minute;
     }
+    TimeStamp.prototype.time = function () {
+        return this.hour + ":" + this.minute;
+    };
+    TimeStamp.prototype.date = function () {
+        return this.day + "." + this.month + "." + this.year;
+    };
     return TimeStamp;
 }());
 var ChatMessage = /** @class */ (function () {
     function ChatMessage(msg) {
         this.id = msg.id;
-        this.senderid = msg.senderid;
+        this.sender = new User(msg.sender);
         this.timestamp = new TimeStamp(msg.timestamp);
         this.content = new ChatMsgContent(msg.content);
     }
@@ -41,9 +62,8 @@ var BasicChat = /** @class */ (function () {
     };
     BasicChat.prototype.sendMessage = function () {
         var msgText = this.msgInput.value;
-        console.log("text: " + msgText);
         this.msgInput.value = "";
-        if (msgText == null || msgText == undefined) {
+        if (msgText == null || msgText == undefined || msgText == "") {
             alert("Вы должны ввести хотя бы какой-то текст");
         }
         else {
@@ -53,17 +73,24 @@ var BasicChat = /** @class */ (function () {
                     text: msgText
                 }
             };
-            console.log(outMsg);
             this.ws.send(JSON.stringify(outMsg));
         }
     };
     BasicChat.prototype.loadHistory = function (msgHist) {
+        var _this = this;
+        this.clear();
         this.history = msgHist.history;
+        this.history.forEach(function (el) {
+            _this.newMessage(el);
+        });
     };
-    BasicChat.prototype.newMessage = function (msg) {
+    BasicChat.prototype.newMessage = function (inpMsg) {
+        var msg = new ChatMessage(inpMsg);
         this.history.push(msg);
         var clone = document.importNode(this.msgTemplate.content, true);
         clone.querySelector(".chatmsg-text").innerHTML = msg.content.text;
+        var timestamp = msg.timestamp.time();
+        clone.querySelector(".chatmsg-info").innerHTML = msg.sender.login + "  -  " + timestamp;
         this.chatContainer.appendChild(clone);
     };
     return BasicChat;
