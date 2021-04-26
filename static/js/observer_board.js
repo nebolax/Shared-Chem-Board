@@ -15,6 +15,9 @@ var observer_board;
             case MsgTypes.Points:
                 board.drawPackage(msg.data.points);
                 break;
+            case MsgTypes.InpChatMsg:
+                chat.newMessage(msg.data);
+                break;
         }
     }
     function switchBoard(id) {
@@ -30,6 +33,7 @@ var observer_board;
     }
     var ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname);
     var board = new ObserverBoard(ws);
+    var chat = new BasicChat(document.getElementById("chat"), ws);
     initPage();
     ws.onmessage = msgParser;
 })(observer_board || (observer_board = {}));

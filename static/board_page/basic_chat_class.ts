@@ -43,20 +43,25 @@ class BasicChat {
     constructor(chatTag: HTMLDivElement, ws: WebSocket) {
         this.chatTag = chatTag
         this.ws = ws
-        chatTag.querySelector("#send-new-chat-msg")?.addEventListener("click", this.sendMessage)
+        chatTag.querySelector("#send-new-chat-msg")!!.addEventListener("click", () => { this.sendMessage() })
     }
 
-    sendMessage(e: Event) {
-        let msgText = this.chatTag.querySelector("#new-chat-msg-text")?.textContent
+    sendMessage() {
+        let textInput = <HTMLInputElement>this.chatTag.querySelector("#new-chat-msg-text")!!
+        let msgText = textInput.value
+        console.log("text: " + msgText)
+        textInput.value = ""
         if (msgText == null || msgText == undefined) {
             alert("Вы должны ввести хотя бы какой-то текст")
         } else {
-            this.ws.send(JSON.stringify({
+            let outMsg = {
                 type: MsgTypes.OutChatMsg,
                 data: {
                     text: msgText
                 }
-            }))
+            }
+            console.log(outMsg)
+            this.ws.send(JSON.stringify(outMsg))
         }
     }
     loadHistory(msgHist: any) {
@@ -67,6 +72,7 @@ class BasicChat {
         let templ = <HTMLTemplateElement>this.chatTag.querySelector("#template-chatmsg")
         let clone = document.importNode(templ.content, true)
         clone.querySelector(".chatmsg-text")!!.innerHTML = msg.content.text
-        this.chatTag.firstChild?.appendChild(clone)
+        let chatContainer = <HTMLDivElement>this.chatTag.querySelector("#chat-container")
+        chatContainer.appendChild(clone)
     }
 }

@@ -24,6 +24,9 @@ var admin_board;
                     (_a = document.getElementById("observers-nav")) === null || _a === void 0 ? void 0 : _a.appendChild(clone);
                 });
                 break;
+            case MsgTypes.InpChatMsg:
+                chat.newMessage(msg.data);
+                break;
         }
     }
     function switchView(e) {
@@ -38,6 +41,7 @@ var admin_board;
     }
     var ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname);
     var board = new AdminBoard(ws);
+    var chat = new BasicChat(document.getElementById("chat"), ws);
     initPage();
     ws.onmessage = msgParser;
 })(admin_board || (admin_board = {}));

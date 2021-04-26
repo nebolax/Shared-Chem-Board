@@ -15,6 +15,9 @@ function msgParser(e: MessageEvent) {
     case MsgTypes.Points:
         board.drawPackage(msg.data.points)
         break;
+    case MsgTypes.InpChatMsg:
+        chat.newMessage(msg.data)
+        break
     }
 }
 
@@ -32,6 +35,7 @@ function switchBoard(id: number) {
 
 let ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname)
 let board = new ObserverBoard(ws)
+let chat = new BasicChat(<HTMLDivElement>document.getElementById("chat"), ws)
 
 initPage()
 ws.onmessage = msgParser

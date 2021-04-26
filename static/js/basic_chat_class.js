@@ -26,37 +26,41 @@ var ChatMessage = /** @class */ (function () {
 }());
 var BasicChat = /** @class */ (function () {
     function BasicChat(chatTag, ws) {
-        var _a;
+        var _this = this;
         this.history = [];
         this.chatTag = chatTag;
         this.ws = ws;
-        (_a = chatTag.querySelector("#send-new-chat-msg")) === null || _a === void 0 ? void 0 : _a.addEventListener("click", this.sendMessage);
+        chatTag.querySelector("#send-new-chat-msg").addEventListener("click", function () { _this.sendMessage(); });
     }
-    BasicChat.prototype.sendMessage = function (e) {
-        var _a;
-        var msgText = (_a = this.chatTag.querySelector("#new-chat-msg-text")) === null || _a === void 0 ? void 0 : _a.textContent;
+    BasicChat.prototype.sendMessage = function () {
+        var textInput = this.chatTag.querySelector("#new-chat-msg-text");
+        var msgText = textInput.value;
+        console.log("text: " + msgText);
+        textInput.value = "";
         if (msgText == null || msgText == undefined) {
             alert("Вы должны ввести хотя бы какой-то текст");
         }
         else {
-            this.ws.send(JSON.stringify({
+            var outMsg = {
                 type: MsgTypes.OutChatMsg,
                 data: {
                     text: msgText
                 }
-            }));
+            };
+            console.log(outMsg);
+            this.ws.send(JSON.stringify(outMsg));
         }
     };
     BasicChat.prototype.loadHistory = function (msgHist) {
         this.history = msgHist.history;
     };
     BasicChat.prototype.newMessage = function (msg) {
-        var _a;
         this.history.push(msg);
         var templ = this.chatTag.querySelector("#template-chatmsg");
         var clone = document.importNode(templ.content, true);
         clone.querySelector(".chatmsg-text").innerHTML = msg.content.text;
-        (_a = this.chatTag.firstChild) === null || _a === void 0 ? void 0 : _a.appendChild(clone);
+        var chatContainer = this.chatTag.querySelector("#chat-container");
+        chatContainer.appendChild(clone);
     };
     return BasicChat;
 }());

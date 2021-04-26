@@ -23,6 +23,9 @@ function msgParser(e: MessageEvent) {
             document.getElementById("observers-nav")?.appendChild(clone)
         });
         break
+    case MsgTypes.InpChatMsg:
+        chat.newMessage(msg.data)
+        break
 }
 }
 
@@ -38,6 +41,7 @@ function switchView(e: Event) {
 
 let ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname)
 let board = new AdminBoard(ws)
+let chat = new BasicChat(<HTMLDivElement>document.getElementById("chat"), ws)
 
 initPage()
 ws.onmessage = msgParser
