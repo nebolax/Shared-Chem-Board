@@ -4,18 +4,22 @@ import (
 	"sync"
 )
 
+type DrawingsHistory [][]Point
+
 type Board struct {
-	ID        int
-	Admin     int
-	Name      string
-	Password  string
-	Observers []*Observer
-	History   [][]Point
+	ID              int
+	Admin           int
+	Name            string
+	Password        string
+	Observers       []*Observer
+	DrawingsHistory DrawingsHistory
+	ChatHistory     ChatHistory
 }
 
 type Observer struct {
-	UserID  int
-	History [][]Point
+	UserID          int
+	DrawingsHistory DrawingsHistory
+	ChatHistory     ChatHistory
 }
 
 type DataElem struct {

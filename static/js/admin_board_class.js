@@ -16,12 +16,9 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var AdminBoard = /** @class */ (function (_super) {
     __extends(AdminBoard, _super);
-    function AdminBoard(msgParser) {
-        var _this = _super.call(this) || this;
+    function AdminBoard(ws) {
+        var _this = _super.call(this, ws) || this;
         _this.curBoardID = 0;
-        _this.msgParser = _this.msgParser = function (b, e) {
-            msgParser(b, e);
-        };
         return _this;
     }
     AdminBoard.prototype.toPersonal = function (viewID) {
@@ -44,4 +41,4 @@ var AdminBoard = /** @class */ (function (_super) {
         }));
     };
     return AdminBoard;
-}(DrawingBoard));
+}(BasicBoard));

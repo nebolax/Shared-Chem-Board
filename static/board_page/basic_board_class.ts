@@ -1,9 +1,17 @@
+enum MsgTypes {
+    Points = 0,
+    ObsStat,
+    Chview,
+    OutChatMsg,
+    InpChatMsg
+}
+
 class Point {
     x: number = 0;
     y: number = 0;
 }
 
-class DrawingBoard {
+class BasicBoard {
     ws: WebSocket;
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
@@ -14,14 +22,8 @@ class DrawingBoard {
     sendBuf: Point[];
     isDrawable: boolean;
 
-    msgParser: (b: DrawingBoard, e: MessageEvent) => void = function() {
-        console.log("from default parser") 
-    };
-
-    constructor() {
-        this.ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname)
-
-        this.ws.onmessage = (e) => { this.msgParser(this, e) }
+    constructor(ws: WebSocket) {
+        this.ws = ws
         this.drawing = false
         this.x = 0
         this.y = 0
@@ -113,10 +115,4 @@ class DrawingBoard {
         this.ctx.closePath()
     }
 
-}
-
-enum MsgTypes {
-    Points = 0,
-    ObsStat,
-    Chview,
 }

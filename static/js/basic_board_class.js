@@ -1,4 +1,12 @@
 "use strict";
+var MsgTypes;
+(function (MsgTypes) {
+    MsgTypes[MsgTypes["Points"] = 0] = "Points";
+    MsgTypes[MsgTypes["ObsStat"] = 1] = "ObsStat";
+    MsgTypes[MsgTypes["Chview"] = 2] = "Chview";
+    MsgTypes[MsgTypes["OutChatMsg"] = 3] = "OutChatMsg";
+    MsgTypes[MsgTypes["InpChatMsg"] = 4] = "InpChatMsg";
+})(MsgTypes || (MsgTypes = {}));
 var Point = /** @class */ (function () {
     function Point() {
         this.x = 0;
@@ -6,14 +14,10 @@ var Point = /** @class */ (function () {
     }
     return Point;
 }());
-var DrawingBoard = /** @class */ (function () {
-    function DrawingBoard() {
+var BasicBoard = /** @class */ (function () {
+    function BasicBoard(ws) {
         var _this = this;
-        this.msgParser = function () {
-            console.log("from default parser");
-        };
-        this.ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname);
-        this.ws.onmessage = function (e) { _this.msgParser(_this, e); };
+        this.ws = ws;
         this.drawing = false;
         this.x = 0;
         this.y = 0;
@@ -27,12 +31,12 @@ var DrawingBoard = /** @class */ (function () {
         this.canvas.addEventListener('mousemove', function (e) { _this.mousemove(e); });
         window.addEventListener('mouseup', function (e) { _this.mouseup(e); });
     }
-    DrawingBoard.prototype.clear = function () {
+    BasicBoard.prototype.clear = function () {
         this.drawing = false;
         this.sendBuf = [];
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     };
-    DrawingBoard.prototype.mousedown = function (e) {
+    BasicBoard.prototype.mousedown = function (e) {
         this.x = e.offsetX;
         this.y = e.offsetY;
         this.drawing = true;
@@ -42,7 +46,7 @@ var DrawingBoard = /** @class */ (function () {
         });
         this.checkBuf();
     };
-    DrawingBoard.prototype.mousemove = function (e) {
+    BasicBoard.prototype.mousemove = function (e) {
         if (this.drawing === true) {
             this.drawLine(this.x, this.y, e.offsetX, e.offsetY);
             this.x = e.offsetX;
@@ -54,7 +58,7 @@ var DrawingBoard = /** @class */ (function () {
             this.checkBuf();
         }
     };
-    DrawingBoard.prototype.mouseup = function (e) {
+    BasicBoard.prototype.mouseup = function (e) {
         if (this.drawing === true) {
             this.drawLine(this.x, this.y, e.offsetX, e.offsetY);
             this.sendBuf.push({
@@ -72,12 +76,12 @@ var DrawingBoard = /** @class */ (function () {
             this.drawing = false;
         }
     };
-    DrawingBoard.prototype.drawPackage = function (points) {
+    BasicBoard.prototype.drawPackage = function (points) {
         for (var i = 0; i < points.length - 1; i++) {
             this.drawLine(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y);
         }
     };
-    DrawingBoard.prototype.sendPoints = function () {
+    BasicBoard.prototype.sendPoints = function () {
         this.ws.send(JSON.stringify({
             type: MsgTypes.Points,
             data: {
@@ -88,12 +92,12 @@ var DrawingBoard = /** @class */ (function () {
         this.sendBuf = [];
         this.sendBuf.push(pv);
     };
-    DrawingBoard.prototype.checkBuf = function () {
+    BasicBoard.prototype.checkBuf = function () {
         if (this.sendBuf.length >= 5) {
             this.sendPoints();
         }
     };
-    DrawingBoard.prototype.drawLine = function (x1, y1, x2, y2) {
+    BasicBoard.prototype.drawLine = function (x1, y1, x2, y2) {
         this.ctx.beginPath();
         this.ctx.strokeStyle = 'black';
         this.ctx.lineWidth = 1;
@@ -102,11 +106,5 @@ var DrawingBoard = /** @class */ (function () {
         this.ctx.stroke();
         this.ctx.closePath();
     };
-    return DrawingBoard;
+    return BasicBoard;
 }());
-var MsgTypes;
-(function (MsgTypes) {
-    MsgTypes[MsgTypes["Points"] = 0] = "Points";
-    MsgTypes[MsgTypes["ObsStat"] = 1] = "ObsStat";
-    MsgTypes[MsgTypes["Chview"] = 2] = "Chview";
-})(MsgTypes || (MsgTypes = {}));

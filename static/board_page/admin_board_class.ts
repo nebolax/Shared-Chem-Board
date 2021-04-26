@@ -1,11 +1,8 @@
-class AdminBoard extends DrawingBoard {
+class AdminBoard extends BasicBoard {
     curBoardID: number = 0
 
-    constructor(msgParser: (b: AdminBoard, e: MessageEvent) => void) {
-        super()
-        this.msgParser = this.msgParser = function(b, e) {
-            msgParser(b as AdminBoard, e)
-        }
+    constructor(ws: WebSocket) {
+        super(ws)
     }
 
     toPersonal(viewID: number) {

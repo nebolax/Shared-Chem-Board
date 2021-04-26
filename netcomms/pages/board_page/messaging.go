@@ -8,12 +8,12 @@ var clients = make(map[int]sockClient)
 
 func sendHistory(connID, boardID, viewID int) {
 	if b, ok := all_boards.BoardByID(boardID); ok {
-		var hist [][]all_boards.Point
+		var hist all_boards.DrawingsHistory
 		if viewID == 0 {
-			hist = b.History
+			hist = b.DrawingsHistory
 		} else {
 			if obs, ok := b.ObserverByID(viewID); ok {
-				hist = obs.History
+				hist = obs.DrawingsHistory
 			}
 		}
 		for _, pack := range hist {
@@ -22,9 +22,7 @@ func sendHistory(connID, boardID, viewID int) {
 	}
 }
 
-func newDrawing(boardID, viewID, exceptConn int, msg pointsMSG) {
-	all_boards.NewDrawing(boardID, viewID, msg.Points)
-
+func newGroupMessage(boardID, viewID, exceptConn int, msg interface{}) {
 	for _, cl := range clients {
 		if cl.boardID() == boardID {
 			if cl.isAdmin() {

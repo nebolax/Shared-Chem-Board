@@ -4,6 +4,7 @@ import (
 	"ChemBoard/utils/incrementor"
 	"strings"
 	"sync"
+	"time"
 )
 
 var BoardsArray = []*DataElem{
@@ -17,7 +18,7 @@ var BoardsArray = []*DataElem{
 
 func CreateBoard(adminID int, name, pwd string) int {
 	nID := incrementor.Next("boards")
-	board := &Board{nID, adminID, name, pwd, []*Observer{}, [][]Point{}}
+	board := &Board{nID, adminID, name, pwd, []*Observer{}, DrawingsHistory{}, ChatHistory{}}
 	BoardsArray = append(BoardsArray, &DataElem{board, sync.Mutex{}})
 	return nID
 }
@@ -49,9 +50,9 @@ func (b Board) ObserverByID(userID int) (Observer, bool) {
 	return Observer{}, false
 }
 
-func pointerByID(id int) *Board {
+func boardPointerByID(boardID int) *Board {
 	for _, el := range BoardsArray {
-		if el.board.ID == id {
+		if el.board.ID == boardID {
 			return el.board
 		}
 	}
@@ -107,9 +108,9 @@ func IsAdmin(userID, boardID int) bool {
 }
 
 func AddObserver(boardID, userID int, pwd string) bool {
-	if b := pointerByID(boardID); b != nil {
+	if b := boardPointerByID(boardID); b != nil {
 		if b.Password == pwd {
-			b.Observers = append(b.Observers, &Observer{userID, [][]Point{}})
+			b.Observers = append(b.Observers, &Observer{userID, DrawingsHistory{}, ChatHistory{}})
 			return true
 		}
 	}
@@ -131,13 +132,46 @@ func BoardsWithoutUser(key string, userID int) []Board {
 func NewDrawing(boardID, viewID int, points []Point) {
 	bar := BoardsArray
 	_ = bar
-	if b := pointerByID(boardID); b != nil {
+	if b := boardPointerByID(boardID); b != nil {
 		if viewID == 0 {
-			b.History = append(b.History, points)
+			b.DrawingsHistory = append(b.DrawingsHistory, points)
 		} else {
 			if obs := b.obspointerByID(viewID); obs != nil {
-				obs.History = append(obs.History, points)
+				obs.DrawingsHistory = append(obs.DrawingsHistory, points)
 			}
 		}
 	}
+}
+
+func curTimeStamp() TimeStamp {
+	ct := time.Now()
+	return TimeStamp{
+		ct.Year(),
+		int(ct.Month()),
+		ct.Day(),
+		ct.Hour(),
+		ct.Minute(),
+	}
+}
+
+func NewChatMessage(boardID, viewID, senderID int, content ChatContent) (ChatMessage, bool) {
+	timeStamp := curTimeStamp()
+	msgID := incrementor.Next("chat-message")
+	msg := ChatMessage{msgID, senderID, timeStamp, content}
+
+	if b := boardPointerByID(boardID); b != nil {
+		if viewID == 0 {
+			b.ChatHistory = append(b.ChatHistory, msg)
+		} else {
+			if obs := b.obspointerByID(viewID); obs != nil {
+				obs.ChatHistory = append(obs.ChatHistory, msg)
+			} else {
+				return ChatMessage{}, false
+			}
+		}
+	} else {
+		return ChatMessage{}, false
+	}
+
+	return msg, true
 }

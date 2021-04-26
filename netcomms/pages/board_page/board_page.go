@@ -20,7 +20,8 @@ func procIncomingMessages(connID int) {
 		if ok {
 			switch typesMap[reflect.TypeOf(msg)] {
 			case tPoints:
-				newDrawing(cl.boardID(), curView(cl), connID, msg.(pointsMSG))
+				all_boards.NewDrawing(cl.boardID(), curView(cl), msg.(pointsMSG).Points)
+				newGroupMessage(cl.boardID(), curView(cl), connID, msg.(pointsMSG))
 			case tChview:
 				tms := msg.(chviewMSG)
 				if cl.isAdmin() {
@@ -33,6 +34,11 @@ func procIncomingMessages(connID int) {
 					clients[connID] = nc
 				}
 				sendHistory(connID, cl.boardID(), curView(clients[connID]))
+			case tInpChatMsg:
+				msgContent := msg.(all_boards.ChatContent)
+				if newMsg, ok := all_boards.NewChatMessage(cl.boardID(), curView(cl), cl.userID(), msgContent); ok {
+					newGroupMessage(cl.boardID(), curView(cl), 0, newMsg)
+				}
 			}
 		} else {
 			break

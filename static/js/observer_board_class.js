@@ -16,11 +16,8 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var ObserverBoard = /** @class */ (function (_super) {
     __extends(ObserverBoard, _super);
-    function ObserverBoard(msgParser) {
-        var _this = _super.call(this) || this;
-        _this.msgParser = function (b, e) {
-            msgParser(b, e);
-        };
+    function ObserverBoard(ws) {
+        var _this = _super.call(this, ws) || this;
         _this.isDrawable = false;
         return _this;
     }
@@ -60,4 +57,4 @@ var ObserverBoard = /** @class */ (function (_super) {
         }));
     };
     return ObserverBoard;
-}(DrawingBoard));
+}(BasicBoard));

@@ -1,6 +1,10 @@
 module admin_board {
 
-function msgParser(board: AdminBoard, e: MessageEvent) {
+function initPage() {
+    $("#views-nav").find("#general-page").on("click", switchView)
+}
+
+function msgParser(e: MessageEvent) {
     let msg = JSON.parse(e.data)
     switch(msg.type) {
     case MsgTypes.Points:
@@ -32,6 +36,9 @@ function switchView(e: Event) {
     }
 }
 
-let board = new AdminBoard(msgParser)
-$("#views-nav").find("#general-page").on("click", switchView)
+let ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname)
+let board = new AdminBoard(ws)
+
+initPage()
+ws.onmessage = msgParser
 }

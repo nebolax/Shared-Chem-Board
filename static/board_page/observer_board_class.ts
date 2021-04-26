@@ -1,9 +1,6 @@
-class ObserverBoard extends DrawingBoard {
-    constructor(msgParser: (b: ObserverBoard, e: MessageEvent) => void) {
-        super()
-        this.msgParser = function(b, e) {
-            msgParser(b as ObserverBoard, e)
-        }
+class ObserverBoard extends BasicBoard {
+    constructor(ws: WebSocket) {
+        super(ws)
         this.isDrawable = false
     }
     mousedown(e: MouseEvent) {

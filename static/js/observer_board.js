@@ -9,7 +9,7 @@ var observer_board;
             switchBoard(2);
         });
     }
-    function msgParser(b, e) {
+    function msgParser(e) {
         var msg = JSON.parse(e.data);
         switch (msg.type) {
             case MsgTypes.Points:
@@ -28,6 +28,8 @@ var observer_board;
                 break;
         }
     }
+    var ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname);
+    var board = new ObserverBoard(ws);
     initPage();
-    var board = new ObserverBoard(msgParser);
+    ws.onmessage = msgParser;
 })(observer_board || (observer_board = {}));

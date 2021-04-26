@@ -48,9 +48,11 @@ func (cl observerClient) isAdmin() bool         { return false }
 type msgType int
 
 const (
-	tPoints  msgType = iota
-	tObsStat msgType = iota
-	tChview  msgType = iota
+	tPoints     msgType = iota
+	tObsStat    msgType = iota
+	tChview     msgType = iota
+	tInpChatMsg msgType = iota
+	tOutChatMsg msgType = iota
 )
 
 type anyMSG struct {

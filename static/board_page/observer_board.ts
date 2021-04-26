@@ -9,7 +9,7 @@ function initPage() {
     })
 }
 
-function msgParser(b: ObserverBoard, e: MessageEvent) {
+function msgParser(e: MessageEvent) {
     let msg = JSON.parse(e.data)
     switch(msg.type) {
     case MsgTypes.Points:
@@ -30,7 +30,9 @@ function switchBoard(id: number) {
     }
 }
 
-initPage()
-let board = new ObserverBoard(msgParser)
+let ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname)
+let board = new ObserverBoard(ws)
 
+initPage()
+ws.onmessage = msgParser
 }

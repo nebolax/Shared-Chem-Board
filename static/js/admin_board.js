@@ -1,7 +1,10 @@
 "use strict";
 var admin_board;
 (function (admin_board) {
-    function msgParser(board, e) {
+    function initPage() {
+        $("#views-nav").find("#general-page").on("click", switchView);
+    }
+    function msgParser(e) {
         var msg = JSON.parse(e.data);
         switch (msg.type) {
             case MsgTypes.Points:
@@ -33,6 +36,8 @@ var admin_board;
             board.toPersonal(nview);
         }
     }
-    var board = new AdminBoard(msgParser);
-    $("#views-nav").find("#general-page").on("click", switchView);
+    var ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname);
+    var board = new AdminBoard(ws);
+    initPage();
+    ws.onmessage = msgParser;
 })(admin_board || (admin_board = {}));

@@ -1,6 +1,7 @@
 package board_page
 
 import (
+	"ChemBoard/all_boards"
 	"reflect"
 
 	"github.com/mitchellh/mapstructure"
@@ -8,9 +9,11 @@ import (
 
 var (
 	typesMap = map[reflect.Type]msgType{
-		reflect.TypeOf(pointsMSG{}):     tPoints,
-		reflect.TypeOf(allObsStatMSG{}): tObsStat,
-		reflect.TypeOf(chviewMSG{}):     tChview,
+		reflect.TypeOf(pointsMSG{}):              tPoints,
+		reflect.TypeOf(allObsStatMSG{}):          tObsStat,
+		reflect.TypeOf(chviewMSG{}):              tChview,
+		reflect.TypeOf(all_boards.ChatContent{}): tInpChatMsg,
+		reflect.TypeOf(all_boards.ChatMessage{}): tOutChatMsg,
 	}
 )
 
@@ -32,6 +35,14 @@ func decodeMessage(msg anyMSG) (interface{}, bool) {
 			return 0, false
 		}
 		return mstr, true
+	case tInpChatMsg:
+		var mstr all_boards.ChatContent
+		err := mapstructure.Decode(msg.Data, &mstr)
+		if err != nil {
+			println(err.Error())
+			return 0, false
+		}
+		return mstr, true
 	default:
 		return 0, false
 	}
@@ -45,6 +56,8 @@ func encodeMessage(msg interface{}) (anyMSG, bool) {
 		return anyMSG{tChview, msg}, true
 	case tObsStat:
 		return anyMSG{tObsStat, msg}, true
+	case tOutChatMsg:
+		return anyMSG{tOutChatMsg, msg}, true
 	}
 	return anyMSG{}, false
 }
