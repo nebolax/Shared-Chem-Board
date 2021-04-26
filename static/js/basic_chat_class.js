@@ -29,14 +29,20 @@ var BasicChat = /** @class */ (function () {
         var _this = this;
         this.history = [];
         this.chatTag = chatTag;
+        this.msgTemplate = this.chatTag.querySelector("#template-chatmsg");
+        this.msgInput = this.chatTag.querySelector("#new-chat-msg-text");
+        this.chatContainer = this.chatTag.querySelector("#chat-container");
         this.ws = ws;
         chatTag.querySelector("#send-new-chat-msg").addEventListener("click", function () { _this.sendMessage(); });
     }
+    BasicChat.prototype.clear = function () {
+        this.history = [];
+        this.chatContainer.innerHTML = "";
+    };
     BasicChat.prototype.sendMessage = function () {
-        var textInput = this.chatTag.querySelector("#new-chat-msg-text");
-        var msgText = textInput.value;
+        var msgText = this.msgInput.value;
         console.log("text: " + msgText);
-        textInput.value = "";
+        this.msgInput.value = "";
         if (msgText == null || msgText == undefined) {
             alert("Вы должны ввести хотя бы какой-то текст");
         }
@@ -56,11 +62,9 @@ var BasicChat = /** @class */ (function () {
     };
     BasicChat.prototype.newMessage = function (msg) {
         this.history.push(msg);
-        var templ = this.chatTag.querySelector("#template-chatmsg");
-        var clone = document.importNode(templ.content, true);
+        var clone = document.importNode(this.msgTemplate.content, true);
         clone.querySelector(".chatmsg-text").innerHTML = msg.content.text;
-        var chatContainer = this.chatTag.querySelector("#chat-container");
-        chatContainer.appendChild(clone);
+        this.chatContainer.appendChild(clone);
     };
     return BasicChat;
 }());

@@ -17,28 +17,7 @@ var __extends = (this && this.__extends) || (function () {
 var AdminBoard = /** @class */ (function (_super) {
     __extends(AdminBoard, _super);
     function AdminBoard(ws) {
-        var _this = _super.call(this, ws) || this;
-        _this.curBoardID = 0;
-        return _this;
+        return _super.call(this, ws) || this;
     }
-    AdminBoard.prototype.toPersonal = function (viewID) {
-        _super.prototype.clear.call(this);
-        console.log(viewID);
-        this.ws.send(JSON.stringify({
-            type: MsgTypes.Chview,
-            data: {
-                nview: viewID
-            }
-        }));
-    };
-    AdminBoard.prototype.toGeneral = function () {
-        _super.prototype.clear.call(this);
-        this.ws.send(JSON.stringify({
-            type: MsgTypes.Chview,
-            data: {
-                nview: 0
-            }
-        }));
-    };
     return AdminBoard;
 }(BasicBoard));

@@ -24,12 +24,34 @@ var observer_board;
         console.log(id);
         switch (id) {
             case 2:
-                board.toPersonalBoard();
+                toPersonalBoard();
                 break;
             default:
-                board.toGeneralBoard();
+                toGeneralBoard();
                 break;
         }
+    }
+    function toGeneralBoard() {
+        board.clear();
+        chat.clear();
+        board.isDrawable = false;
+        ws.send(JSON.stringify({
+            type: MsgTypes.Chview,
+            data: {
+                nview: 0
+            }
+        }));
+    }
+    function toPersonalBoard() {
+        board.clear();
+        chat.clear();
+        board.isDrawable = true;
+        ws.send(JSON.stringify({
+            type: MsgTypes.Chview,
+            data: {
+                nview: 1
+            }
+        }));
     }
     var ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname);
     var board = new ObserverBoard(ws);

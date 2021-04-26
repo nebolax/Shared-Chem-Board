@@ -32,12 +32,32 @@ var admin_board;
     function switchView(e) {
         var sourceId = e.target.id;
         if (sourceId == "general-page") {
-            board.toGeneral();
+            toGeneral();
         }
         else {
             var nview = +sourceId.slice(4);
-            board.toPersonal(nview);
+            toPersonal(nview);
         }
+    }
+    function toPersonal(viewID) {
+        board.clear();
+        chat.clear();
+        ws.send(JSON.stringify({
+            type: MsgTypes.Chview,
+            data: {
+                nview: viewID
+            }
+        }));
+    }
+    function toGeneral() {
+        board.clear();
+        chat.clear();
+        ws.send(JSON.stringify({
+            type: MsgTypes.Chview,
+            data: {
+                nview: 0
+            }
+        }));
     }
     var ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname);
     var board = new AdminBoard(ws);

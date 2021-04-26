@@ -8,16 +8,22 @@ var clients = make(map[int]sockClient)
 
 func sendHistory(connID, boardID, viewID int) {
 	if b, ok := all_boards.BoardByID(boardID); ok {
-		var hist all_boards.DrawingsHistory
+		var drawingsHist all_boards.DrawingsHistory
+		var chatHist all_boards.ChatHistory
 		if viewID == 0 {
-			hist = b.DrawingsHistory
+			drawingsHist = b.DrawingsHistory
+			chatHist = b.ChatHistory
 		} else {
 			if obs, ok := b.ObserverByID(viewID); ok {
-				hist = obs.DrawingsHistory
+				drawingsHist = obs.DrawingsHistory
+				chatHist = obs.ChatHistory
 			}
 		}
-		for _, pack := range hist {
+		for _, pack := range drawingsHist {
 			writeSingleMessage(connID, pointsMSG{pack})
+		}
+		for _, pack := range chatHist {
+			writeSingleMessage(connID, pack)
 		}
 	}
 }

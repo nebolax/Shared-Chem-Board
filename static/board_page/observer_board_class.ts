@@ -18,25 +18,4 @@ class ObserverBoard extends BasicBoard {
             super.mouseup(e)
         }
     }
-
-    toGeneralBoard() {
-        super.clear()
-        this.isDrawable = false
-        this.ws.send(JSON.stringify({
-            type: MsgTypes.Chview,
-            data: {
-                nview: 0
-            }
-        }))
-    }
-    toPersonalBoard() {
-        super.clear()
-        this.isDrawable = true
-        this.ws.send(JSON.stringify({
-            type: MsgTypes.Chview,
-            data: {
-                nview: 1
-            }
-        }))
-    }
 }

@@ -32,11 +32,33 @@ function msgParser(e: MessageEvent) {
 function switchView(e: Event) {
     let sourceId = (<HTMLElement>e.target).id
     if (sourceId == "general-page") {
-        board.toGeneral()
+        toGeneral()
     } else {
         let nview: number = +sourceId.slice(4)
-        board.toPersonal(nview)
+        toPersonal(nview)
     }
+}
+
+function toPersonal(viewID: number) {
+    board.clear()
+    chat.clear()
+    ws.send(JSON.stringify({
+        type: MsgTypes.Chview,
+        data: {
+            nview: viewID
+        }
+    }))
+}
+
+function toGeneral() {
+    board.clear()
+    chat.clear()
+    ws.send(JSON.stringify({
+        type: MsgTypes.Chview,
+        data: {
+            nview: 0
+        }
+    }))
 }
 
 let ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname)

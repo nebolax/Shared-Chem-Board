@@ -36,25 +36,5 @@ var ObserverBoard = /** @class */ (function (_super) {
             _super.prototype.mouseup.call(this, e);
         }
     };
-    ObserverBoard.prototype.toGeneralBoard = function () {
-        _super.prototype.clear.call(this);
-        this.isDrawable = false;
-        this.ws.send(JSON.stringify({
-            type: MsgTypes.Chview,
-            data: {
-                nview: 0
-            }
-        }));
-    };
-    ObserverBoard.prototype.toPersonalBoard = function () {
-        _super.prototype.clear.call(this);
-        this.isDrawable = true;
-        this.ws.send(JSON.stringify({
-            type: MsgTypes.Chview,
-            data: {
-                nview: 1
-            }
-        }));
-    };
     return ObserverBoard;
 }(BasicBoard));

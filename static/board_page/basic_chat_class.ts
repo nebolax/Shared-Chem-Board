@@ -40,17 +40,27 @@ class BasicChat {
     history: ChatMessage[] = [];
     chatTag: HTMLDivElement;
     ws: WebSocket;
+    msgTemplate: HTMLTemplateElement;
+    msgInput: HTMLInputElement;
+    chatContainer: HTMLDivElement;
+
     constructor(chatTag: HTMLDivElement, ws: WebSocket) {
         this.chatTag = chatTag
+        this.msgTemplate = <HTMLTemplateElement>this.chatTag.querySelector("#template-chatmsg")
+        this.msgInput = <HTMLInputElement>this.chatTag.querySelector("#new-chat-msg-text")!!
+        this.chatContainer = <HTMLDivElement>this.chatTag.querySelector("#chat-container")
         this.ws = ws
         chatTag.querySelector("#send-new-chat-msg")!!.addEventListener("click", () => { this.sendMessage() })
     }
 
+    clear() {
+        this.history = []
+        this.chatContainer.innerHTML = ""
+    }
     sendMessage() {
-        let textInput = <HTMLInputElement>this.chatTag.querySelector("#new-chat-msg-text")!!
-        let msgText = textInput.value
+        let msgText = this.msgInput.value
         console.log("text: " + msgText)
-        textInput.value = ""
+        this.msgInput.value = ""
         if (msgText == null || msgText == undefined) {
             alert("Вы должны ввести хотя бы какой-то текст")
         } else {
@@ -69,10 +79,8 @@ class BasicChat {
     }
     newMessage(msg: ChatMessage) {
         this.history.push(msg)
-        let templ = <HTMLTemplateElement>this.chatTag.querySelector("#template-chatmsg")
-        let clone = document.importNode(templ.content, true)
+        let clone = document.importNode(this.msgTemplate.content, true)
         clone.querySelector(".chatmsg-text")!!.innerHTML = msg.content.text
-        let chatContainer = <HTMLDivElement>this.chatTag.querySelector("#chat-container")
-        chatContainer.appendChild(clone)
+        this.chatContainer.appendChild(clone)
     }
 }
