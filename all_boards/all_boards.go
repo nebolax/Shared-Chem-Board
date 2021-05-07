@@ -1,6 +1,7 @@
 package all_boards
 
 import (
+	"ChemBoard/netcomms/pages/account_logic"
 	"ChemBoard/utils/incrementor"
 	"strings"
 	"sync"
@@ -155,23 +156,26 @@ func curTimeStamp() TimeStamp {
 }
 
 func NewChatMessage(boardID, viewID, senderID int, content ChatContent) (ChatMessage, bool) {
-	timeStamp := curTimeStamp()
-	msgID := incrementor.Next("chat-message")
-	msg := ChatMessage{msgID, senderID, timeStamp, content}
+	if user, ok := account_logic.GetUserByID(senderID); ok {
+		timeStamp := curTimeStamp()
+		msgID := incrementor.Next("chat-message")
+		msg := ChatMessage{msgID, user, timeStamp, content}
 
-	if b := boardPointerByID(boardID); b != nil {
-		if viewID == 0 {
-			b.ChatHistory = append(b.ChatHistory, msg)
-		} else {
-			if obs := b.obspointerByID(viewID); obs != nil {
-				obs.ChatHistory = append(obs.ChatHistory, msg)
+		if b := boardPointerByID(boardID); b != nil {
+			if viewID == 0 {
+				b.ChatHistory = append(b.ChatHistory, msg)
 			} else {
-				return ChatMessage{}, false
+				if obs := b.obspointerByID(viewID); obs != nil {
+					obs.ChatHistory = append(obs.ChatHistory, msg)
+				} else {
+					return ChatMessage{}, false
+				}
 			}
+		} else {
+			return ChatMessage{}, false
 		}
-	} else {
-		return ChatMessage{}, false
-	}
 
-	return msg, true
+		return msg, true
+	}
+	return ChatMessage{}, false
 }

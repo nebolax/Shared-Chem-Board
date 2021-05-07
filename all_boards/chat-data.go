@@ -1,5 +1,7 @@
 package all_boards
 
+import "ChemBoard/netcomms/pages/account_logic"
+
 type ChatHistory []ChatMessage
 
 type TimeStamp struct {
@@ -15,10 +17,10 @@ type ChatContent struct {
 }
 
 type ChatMessage struct {
-	ID        int         `json:"id"`
-	SenderID  int         `json:"senderid"`
-	TimeStamp TimeStamp   `json:"timestamp"`
-	Content   ChatContent `json:"content"`
+	ID        int                  `json:"id"`
+	Sender    account_logic.DBUser `json:"sender"`
+	TimeStamp TimeStamp            `json:"timestamp"`
+	Content   ChatContent          `json:"content"`
 }
 
 type Chat struct {

@@ -1,3 +1,25 @@
+class Observer {
+    userid: number;
+    username: string;
+
+    constructor(userid: number, username: string) {
+        this.userid = userid
+        this.username = username
+    }
+}
+
+class User {
+    id: number;
+    login: string;
+    email: string;
+
+    constructor(msg: any) {
+        this.id = msg.id
+        this.login = msg.login
+        this.email = msg.email
+    }
+}
+
 class ChatMsgContent {
     text: string;
 
@@ -20,17 +42,23 @@ class TimeStamp {
         this.hour = msgStamp.hour
         this.minute = msgStamp.minute
     }
+    time() {
+        return this.hour + ":" + this.minute
+    }
+    date() {
+        return this.day + "." + this.month + "." + this.year
+    }
 }
 
 class ChatMessage {
     id: number;
-    senderid: number;
+    sender: User;
     timestamp: TimeStamp;
     content: ChatMsgContent;
 
     constructor(msg: any) {
         this.id = msg.id
-        this.senderid = msg.senderid
+        this.sender = new User(msg.sender)
         this.timestamp = new TimeStamp(msg.timestamp)
         this.content = new ChatMsgContent(msg.content)
     }
@@ -59,9 +87,8 @@ class BasicChat {
     }
     sendMessage() {
         let msgText = this.msgInput.value
-        console.log("text: " + msgText)
         this.msgInput.value = ""
-        if (msgText == null || msgText == undefined) {
+        if (msgText == null || msgText == undefined || msgText == "") {
             alert("Вы должны ввести хотя бы какой-то текст")
         } else {
             let outMsg = {
@@ -70,17 +97,23 @@ class BasicChat {
                     text: msgText
                 }
             }
-            console.log(outMsg)
             this.ws.send(JSON.stringify(outMsg))
         }
     }
     loadHistory(msgHist: any) {
+        this.clear()
         this.history = msgHist.history
+        this.history.forEach(el => {
+            this.newMessage(el)
+        });
     }
-    newMessage(msg: ChatMessage) {
+    newMessage(inpMsg: any) {
+        let msg = new ChatMessage(inpMsg)
         this.history.push(msg)
         let clone = document.importNode(this.msgTemplate.content, true)
         clone.querySelector(".chatmsg-text")!!.innerHTML = msg.content.text
+        let timestamp = msg.timestamp.time()
+        clone.querySelector(".chatmsg-info")!!.innerHTML = msg.sender.login + "  -  " + timestamp
         this.chatContainer.appendChild(clone)
     }
 }
