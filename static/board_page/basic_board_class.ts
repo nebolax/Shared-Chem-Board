@@ -13,8 +13,9 @@ class Point {
 
 class BasicBoard {
     ws: WebSocket;
-    canvas: HTMLCanvasElement;
-    ctx: CanvasRenderingContext2D;
+    snap: Snap.Paper;
+    curGroup: Snap.Paper;
+    allGroups: Snap.Paper[];
 
     drawing: boolean;
     x: number;
@@ -27,92 +28,71 @@ class BasicBoard {
         this.drawing = false
         this.x = 0
         this.y = 0
-        this.canvas = document.getElementById('canvas') as HTMLCanvasElement
-        this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D
-        this.canvas.width = 500
-        this.canvas.height = 500
         this.sendBuf = []
         this.isDrawable = true
+        this.snap = Snap("#svg")
+        this.snap.attr({
+                 strokeWidth: 2,
+                 stroke: "#000"
+         })
+         this.curGroup = this.snap.group()
+         this.allGroups = []
 
-        this.canvas.addEventListener('mousedown', e => { this.mousedown(e) })
-        this.canvas.addEventListener('mousemove', e => { this.mousemove(e) })
+        this.snap.mousedown(e => { this.mousedown(e) })
+        this.snap.mousemove(e => { this.mousemove(e) })
         window.addEventListener('mouseup', e => { this.mouseup(e) })
     }
     clear() {
+        this.x = 0
+        this.y = 0
         this.drawing = false
         this.sendBuf = []
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.snap.clear()
     }
-    mousedown(e: MouseEvent) {
+    generalDraw(e: MouseEvent) {
         this.x = e.offsetX
         this.y = e.offsetY
-        this.drawing = true
         this.sendBuf.push({
             x: this.x,
             y: this.y
         })
-        this.checkBuf()
     }
+    mousedown(e: MouseEvent) {
+       this.generalDraw(e)
+       this.drawing = true
+    } 
     mousemove(e: MouseEvent) {
         if (this.drawing === true) {
-            this.drawLine(this.x, this.y, e.offsetX, e.offsetY)
-            this.x = e.offsetX
-            this.y = e.offsetY
-            this.sendBuf.push({
-                x: this.x,
-                y: this.y
-            })
-            this.checkBuf()
+            this.curGroup.append(this.snap.line(this.x, this.y, e.offsetX, e.offsetY))
+           this.generalDraw(e)
         }
     }
     mouseup(e: MouseEvent) {
         if (this.drawing === true) {
-            this.drawLine(this.x, this.y, e.offsetX, e.offsetY)
-            this.sendBuf.push({
-                x: this.x,
-                y: this.y
-            })
-            this.sendBuf.push({
-                x: e.offsetX,
-                y: e.offsetY
-            })
-            this.x = 0
-            this.y = 0
+            this.curGroup.append(this.snap.line(this.x, this.y, e.offsetX, e.offsetY))
+            this.generalDraw(e)
             this.sendPoints()
-            this.sendBuf = []
             this.drawing = false
+            this.allGroups.push(this.curGroup)
+            this.curGroup = this.snap.group()
+            console.log(this.allGroups)
         }
     }
+    canvasBack() {
 
+    }
     drawPackage(points: Point[]) {
         for (let i = 0; i < points.length - 1; i++) {
-            this.drawLine(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y)
+            this.snap.line(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y)
         }
     }
     sendPoints() {
         this.ws.send(JSON.stringify({
             type: MsgTypes.Points,
             data: {
-                points: this.sendBuf,
+                points: this.sendBuf
             }
         }))
-        let pv = this.sendBuf[this.sendBuf.length - 1]
         this.sendBuf = []
-        this.sendBuf.push(pv)
     }
-    checkBuf() {
-        if (this.sendBuf.length >= 5) {
-            this.sendPoints()
-        }
-    }
-    drawLine(x1: number, y1: number, x2: number, y2: number) {
-        this.ctx.beginPath()
-        this.ctx.strokeStyle = 'black'
-        this.ctx.lineWidth = 1
-        this.ctx.moveTo(x1, y1)
-        this.ctx.lineTo(x2, y2)
-        this.ctx.stroke()
-        this.ctx.closePath()
-    }
-
 }
