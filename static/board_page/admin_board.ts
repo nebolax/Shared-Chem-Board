@@ -2,13 +2,27 @@ module admin_board {
 
 function initPage() {
     $("#views-nav").find("#general-page").on("click", switchView)
+    $("#stepback").on("click", () => { board.stepBack() })
+    $("#dragbtn").on("click", () => { board.switchDragMode() })
 }
 
 function msgParser(e: MessageEvent) {
     let msg = JSON.parse(e.data)
     switch(msg.type) {
-    case MsgTypes.Drawing:
+    case MsgTypes.Action:
+        console.log(msg)
         board.drawPackage(msg.data)
+        break;
+    case MsgTypes.SetId:
+        switch (msg.data.property) {
+            case "action":
+                board.newActionID(msg.data.id)
+            break;
+
+            case "drawing":
+                board.newDrawingID(msg.data.id)
+            break;
+        }
         break;
     case MsgTypes.ObsStat:
         msg = msg.data

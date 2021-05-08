@@ -12,7 +12,7 @@ var observer_board;
     function msgParser(e) {
         var msg = JSON.parse(e.data);
         switch (msg.type) {
-            case MsgTypes.Drawing:
+            case MsgTypes.Action:
                 board.drawPackage(msg.data.points);
                 break;
             case MsgTypes.InpChatMsg:

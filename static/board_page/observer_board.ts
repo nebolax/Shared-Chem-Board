@@ -12,7 +12,7 @@ function initPage() {
 function msgParser(e: MessageEvent) {
     let msg = JSON.parse(e.data)
     switch(msg.type) {
-    case MsgTypes.Drawing:
+    case MsgTypes.Action:
         board.drawPackage(msg.data.points)
         break;
     case MsgTypes.InpChatMsg:

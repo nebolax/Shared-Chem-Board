@@ -3,12 +3,25 @@ var admin_board;
 (function (admin_board) {
     function initPage() {
         $("#views-nav").find("#general-page").on("click", switchView);
+        $("#stepback").on("click", function () { board.stepBack(); });
+        $("#dragbtn").on("click", function () { board.switchDragMode(); });
     }
     function msgParser(e) {
         var msg = JSON.parse(e.data);
         switch (msg.type) {
-            case MsgTypes.Drawing:
+            case MsgTypes.Action:
+                console.log(msg);
                 board.drawPackage(msg.data);
+                break;
+            case MsgTypes.SetId:
+                switch (msg.data.property) {
+                    case "action":
+                        board.newActionID(msg.data.id);
+                        break;
+                    case "drawing":
+                        board.newDrawingID(msg.data.id);
+                        break;
+                }
                 break;
             case MsgTypes.ObsStat:
                 msg = msg.data;

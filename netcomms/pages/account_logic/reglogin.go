@@ -87,7 +87,7 @@ func RegUser(login, email, pwd string) (int, status.StatusCode) {
 	if exbylog || exbymemail {
 		return 0, status.UserAlreadyExists
 	}
-	id := incrementor.Next("users")
+	id := incrementor.Next("users", true)
 	user := DBUser{id, login, email}
 	passwords[id] = pwd
 	users = append(users, user)

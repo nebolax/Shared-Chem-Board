@@ -48,6 +48,7 @@ type msgType int
 
 const (
 	tDrawing    msgType = iota
+	tSetId      msgType = iota
 	tObsStat    msgType = iota
 	tChview     msgType = iota
 	tInpChatMsg msgType = iota
@@ -63,6 +64,10 @@ type chviewMSG struct {
 	NView int `json:"nview"`
 }
 
+type SetIdMSG struct {
+	Property string `json:"property"`
+	ID       int    `json:"id"`
+}
 type allObsStatMSG struct {
 	Info []singleObsInfo `json:"allObsInfo"`
 }

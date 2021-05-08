@@ -3,6 +3,7 @@ package all_boards
 import (
 	"ChemBoard/netcomms/pages/account_logic"
 	"ChemBoard/utils/incrementor"
+	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -18,7 +19,7 @@ var BoardsArray = []*DataElem{
 //TODO lock mutexes while working + boardsArray chould be private
 
 func CreateBoard(adminID int, name, pwd string) int {
-	nID := incrementor.Next("boards")
+	nID := incrementor.Next("boards", true)
 	board := &Board{nID, adminID, name, pwd, []*Observer{}, DrawingsHistory{}, ChatHistory{}}
 	BoardsArray = append(BoardsArray, &DataElem{board, sync.Mutex{}})
 	return nID
@@ -130,7 +131,11 @@ func BoardsWithoutUser(key string, userID int) []Board {
 	return res
 }
 
-func NewDrawing(boardID, viewID int, msg DrawingMSG) {
+func NewDrawing(boardID, viewID int, msg ActionMSG) (ActionMSG, bool) {
+	actionID := incrementor.Next(fmt.Sprintf("Board%d-action", boardID), true)
+	drawingID := incrementor.Next(fmt.Sprintf("Board%d-drawing", boardID), true)
+	msg.ID = actionID
+	msg.Drawing.ID = drawingID
 	bar := BoardsArray
 	_ = bar
 	if b := boardPointerByID(boardID); b != nil {
@@ -141,6 +146,9 @@ func NewDrawing(boardID, viewID int, msg DrawingMSG) {
 				obs.DrawingsHistory = append(obs.DrawingsHistory, msg)
 			}
 		}
+		return msg, true
+	} else {
+		return ActionMSG{}, false
 	}
 }
 
@@ -158,7 +166,7 @@ func curTimeStamp() TimeStamp {
 func NewChatMessage(boardID, viewID, senderID int, content ChatContent) (ChatMessage, bool) {
 	if user, ok := account_logic.GetUserByID(senderID); ok {
 		timeStamp := curTimeStamp()
-		msgID := incrementor.Next("chat-message")
+		msgID := incrementor.Next("chat-message", true)
 		msg := ChatMessage{msgID, user, timeStamp, content}
 
 		if b := boardPointerByID(boardID); b != nil {

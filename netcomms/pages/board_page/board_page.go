@@ -20,8 +20,10 @@ func procIncomingMessages(connID int) {
 		if ok {
 			switch typesMap[reflect.TypeOf(msg)] {
 			case tDrawing:
-				all_boards.NewDrawing(cl.boardID(), curView(cl), msg.(all_boards.DrawingMSG))
-				newGroupMessage(cl.boardID(), curView(cl), connID, msg)
+				newMsg, _ := all_boards.NewDrawing(cl.boardID(), curView(cl), msg.(all_boards.ActionMSG))
+				newGroupMessage(cl.boardID(), curView(cl), connID, newMsg)
+				writeSingleMessage(connID, SetIdMSG{"action", newMsg.ID})
+				writeSingleMessage(connID, SetIdMSG{"drawing", newMsg.Drawing.ID})
 			case tChview:
 				tms := msg.(chviewMSG)
 				if cl.isAdmin() {
@@ -91,7 +93,7 @@ func curBoardObservers(boardID int) []singleObsInfo {
 }
 
 func regNewBoardObserver(r *http.Request, ws *websocket.Conn, boardID, userID int) {
-	connID := incrementor.Next("conns")
+	connID := incrementor.Next("conns", false)
 	if all_boards.IsAdmin(userID, boardID) {
 		clients[connID] = adminClient{boardID, userID, 0, ws, &sync.Mutex{}}
 	} else {
