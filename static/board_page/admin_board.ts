@@ -7,8 +7,8 @@ function initPage() {
 function msgParser(e: MessageEvent) {
     let msg = JSON.parse(e.data)
     switch(msg.type) {
-    case MsgTypes.Points:
-        board.drawPackage(msg.data.points)
+    case MsgTypes.Drawing:
+        board.drawPackage(msg.data)
         break;
     case MsgTypes.ObsStat:
         msg = msg.data

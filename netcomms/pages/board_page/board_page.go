@@ -19,9 +19,9 @@ func procIncomingMessages(connID int) {
 		msg, ok := readSingleMessage(connID)
 		if ok {
 			switch typesMap[reflect.TypeOf(msg)] {
-			case tPoints:
-				all_boards.NewDrawing(cl.boardID(), curView(cl), msg.(pointsMSG).Points)
-				newGroupMessage(cl.boardID(), curView(cl), connID, msg.(pointsMSG))
+			case tDrawing:
+				all_boards.NewDrawing(cl.boardID(), curView(cl), msg.(all_boards.DrawingMSG))
+				newGroupMessage(cl.boardID(), curView(cl), connID, msg)
 			case tChview:
 				tms := msg.(chviewMSG)
 				if cl.isAdmin() {

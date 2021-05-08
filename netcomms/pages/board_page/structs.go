@@ -1,7 +1,6 @@
 package board_page
 
 import (
-	"ChemBoard/all_boards"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -48,7 +47,7 @@ func (cl observerClient) isAdmin() bool         { return false }
 type msgType int
 
 const (
-	tPoints     msgType = iota
+	tDrawing    msgType = iota
 	tObsStat    msgType = iota
 	tChview     msgType = iota
 	tInpChatMsg msgType = iota
@@ -58,9 +57,6 @@ const (
 type anyMSG struct {
 	Type msgType     `json:"type"`
 	Data interface{} `json:"data"`
-}
-type pointsMSG struct {
-	Points []all_boards.Point `json:"points"`
 }
 
 type chviewMSG struct {

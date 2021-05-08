@@ -4,7 +4,18 @@ import (
 	"sync"
 )
 
-type DrawingsHistory [][]Point
+type drawingType int
+
+const (
+	tFreeMouse drawingType = iota
+)
+
+type DrawingMSG struct {
+	Type drawingType `json:"type"`
+	Data interface{} `json:"data"`
+}
+
+type DrawingsHistory []DrawingMSG
 
 type Board struct {
 	ID              int

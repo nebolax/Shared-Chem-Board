@@ -12,8 +12,8 @@ var (
 )
 
 func init() {
-	os.OpenFile("configs.txt", os.O_RDONLY|os.O_CREATE, os.ModeDevice)
-	inp, err := ioutil.ReadFile("configs.txt")
+	os.OpenFile("configs.conf", os.O_RDONLY|os.O_CREATE, os.ModeDevice)
+	inp, err := ioutil.ReadFile("configs.conf")
 	if err != nil {
 		panic(err.Error())
 	} else {
@@ -34,7 +34,7 @@ func Set(key string, value interface{}) {
 	if err != nil {
 		println(err.Error())
 	} else {
-		err := ioutil.WriteFile("configs.txt", b, fs.ModeDevice)
+		err := ioutil.WriteFile("configs.conf", b, fs.ModeDevice)
 		if err != nil {
 			println(err)
 		}

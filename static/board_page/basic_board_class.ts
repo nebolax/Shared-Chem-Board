@@ -1,9 +1,13 @@
 enum MsgTypes {
-    Points = 0,
+    Drawing = 0,
     ObsStat,
     Chview,
     OutChatMsg,
     InpChatMsg
+}
+
+enum DrawingTypes {
+    FreeMouse = 0
 }
 
 class Point {
@@ -20,7 +24,6 @@ class BasicBoard {
     drawing: boolean;
     x: number;
     y: number;
-    sendBuf: Point[];
     isDrawable: boolean;
 
     constructor(ws: WebSocket) {
@@ -28,7 +31,6 @@ class BasicBoard {
         this.drawing = false
         this.x = 0
         this.y = 0
-        this.sendBuf = []
         this.isDrawable = true
         this.snap = Snap("#svg")
         this.snap.attr({
@@ -46,16 +48,11 @@ class BasicBoard {
         this.x = 0
         this.y = 0
         this.drawing = false
-        this.sendBuf = []
         this.snap.clear()
     }
     generalDraw(e: MouseEvent) {
         this.x = e.offsetX
         this.y = e.offsetY
-        this.sendBuf.push({
-            x: this.x,
-            y: this.y
-        })
     }
     mousedown(e: MouseEvent) {
        this.generalDraw(e)
@@ -71,28 +68,49 @@ class BasicBoard {
         if (this.drawing === true) {
             this.curGroup.append(this.snap.line(this.x, this.y, e.offsetX, e.offsetY))
             this.generalDraw(e)
-            this.sendPoints()
             this.drawing = false
             this.allGroups.push(this.curGroup)
+            this.sendDrawing(DrawingTypes.FreeMouse, this.curGroup)
             this.curGroup = this.snap.group()
-            console.log(this.allGroups)
         }
     }
     canvasBack() {
 
     }
-    drawPackage(points: Point[]) {
-        for (let i = 0; i < points.length - 1; i++) {
-            this.snap.line(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y)
-        }
-    }
-    sendPoints() {
-        this.ws.send(JSON.stringify({
-            type: MsgTypes.Points,
-            data: {
-                points: this.sendBuf
+    drawPackage(msg: any) {
+        switch (msg.type) {
+        case DrawingTypes.FreeMouse:
+            for (let i = 0; i < msg.data.length - 1; i++) {
+                this.snap.line(msg.data[i].x, msg.data[i].y, msg.data[i + 1].x, msg.data[i + 1].y)
             }
-        }))
-        this.sendBuf = []
+            break;
+    }
+    }
+    sendDrawing(type: DrawingTypes, fig: Snap.Paper) {
+        switch (type) {
+            case DrawingTypes.FreeMouse:
+                let cords: Point[] = []
+                for(let i = 0; i < fig.children().length; i++) {
+                    let cattrs = fig.children()[i].toJSON().attr
+                    cords.push({
+                        x: cattrs.x1,
+                        y: cattrs.y1
+                    }) 
+                    if (i == fig.children().length - 1) {
+                        cords.push({
+                            x: cattrs.x2,
+                            y: cattrs.y2
+                        })
+                    }
+                }
+                this.ws.send(JSON.stringify({
+                    type: MsgTypes.Drawing,
+                    data: {
+                        type: DrawingTypes.FreeMouse,
+                        data: cords
+                    }
+                }))
+            break;
+        }
     }
 }

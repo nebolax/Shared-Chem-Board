@@ -9,7 +9,7 @@ import (
 
 var (
 	typesMap = map[reflect.Type]msgType{
-		reflect.TypeOf(pointsMSG{}):              tPoints,
+		reflect.TypeOf(all_boards.DrawingMSG{}):  tDrawing,
 		reflect.TypeOf(allObsStatMSG{}):          tObsStat,
 		reflect.TypeOf(chviewMSG{}):              tChview,
 		reflect.TypeOf(all_boards.ChatContent{}): tInpChatMsg,
@@ -19,8 +19,8 @@ var (
 
 func decodeMessage(msg anyMSG) (interface{}, bool) {
 	switch msg.Type {
-	case tPoints:
-		var mstr pointsMSG
+	case tDrawing:
+		var mstr all_boards.DrawingMSG
 		err := mapstructure.Decode(msg.Data, &mstr)
 		if err != nil {
 			println(err.Error())
@@ -50,8 +50,8 @@ func decodeMessage(msg anyMSG) (interface{}, bool) {
 
 func encodeMessage(msg interface{}) (anyMSG, bool) {
 	switch typesMap[reflect.TypeOf(msg)] {
-	case tPoints:
-		return anyMSG{tPoints, msg}, true
+	case tDrawing:
+		return anyMSG{tDrawing, msg}, true
 	case tChview:
 		return anyMSG{tChview, msg}, true
 	case tObsStat:

@@ -130,15 +130,15 @@ func BoardsWithoutUser(key string, userID int) []Board {
 	return res
 }
 
-func NewDrawing(boardID, viewID int, points []Point) {
+func NewDrawing(boardID, viewID int, msg DrawingMSG) {
 	bar := BoardsArray
 	_ = bar
 	if b := boardPointerByID(boardID); b != nil {
 		if viewID == 0 {
-			b.DrawingsHistory = append(b.DrawingsHistory, points)
+			b.DrawingsHistory = append(b.DrawingsHistory, msg)
 		} else {
 			if obs := b.obspointerByID(viewID); obs != nil {
-				obs.DrawingsHistory = append(obs.DrawingsHistory, points)
+				obs.DrawingsHistory = append(obs.DrawingsHistory, msg)
 			}
 		}
 	}

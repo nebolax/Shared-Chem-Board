@@ -20,7 +20,7 @@ func sendHistory(connID, boardID, viewID int) {
 			}
 		}
 		for _, pack := range drawingsHist {
-			writeSingleMessage(connID, pointsMSG{pack})
+			writeSingleMessage(connID, pack)
 		}
 		for _, pack := range chatHist {
 			writeSingleMessage(connID, pack)
