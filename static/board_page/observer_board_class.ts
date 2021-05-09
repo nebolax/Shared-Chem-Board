@@ -18,4 +18,9 @@ class ObserverBoard extends BasicBoard {
             super.mouseup(e)
         }
     }
+    stepBack() {
+        if (this.isDrawable) {
+            super.stepBack()
+        }
+    }
 }

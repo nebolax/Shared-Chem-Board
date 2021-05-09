@@ -4,14 +4,12 @@ var admin_board;
     function initPage() {
         $("#views-nav").find("#general-page").on("click", switchView);
         $("#stepback").on("click", function () { board.stepBack(); });
-        $("#dragbtn").on("click", function () { board.switchDragMode(); });
     }
     function msgParser(e) {
         var msg = JSON.parse(e.data);
         switch (msg.type) {
             case MsgTypes.Action:
-                console.log(msg);
-                board.drawPackage(msg.data);
+                board.newAction(msg.data);
                 break;
             case MsgTypes.SetId:
                 switch (msg.data.property) {
@@ -72,9 +70,12 @@ var admin_board;
             }
         }));
     }
-    var ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname);
-    var board = new AdminBoard(ws);
-    var chat = new BasicChat(document.getElementById("chat"), ws);
+    var ws;
+    var board;
+    var chat;
+    ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname);
+    board = new AdminBoard(ws);
+    chat = new BasicChat(document.getElementById("chat"), ws);
     initPage();
     ws.onmessage = msgParser;
 })(admin_board || (admin_board = {}));

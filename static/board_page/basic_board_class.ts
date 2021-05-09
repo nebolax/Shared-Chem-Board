@@ -13,7 +13,6 @@ enum DrawingTypes {
 
 enum ActionTypes {
     NewDrawing = 0,
-    DrawingMoved,
     DrawingDeleted
 }
 
@@ -86,7 +85,6 @@ class BasicBoard {
     x: number;
     y: number;
     isDrawable: boolean;
-    isDragMode: boolean;
 
     constructor(ws: WebSocket) {
         this.ws = ws
@@ -94,12 +92,11 @@ class BasicBoard {
         this.x = 0
         this.y = 0
         this.isDrawable = true
-        this.isDragMode = false
         this.snap = Snap("#svg")
         this.snap.attr({
-                 strokeWidth: 2,
-                 stroke: "#000"
-         })
+            strokeWidth: 2,
+            stroke: "#000"
+        })
          this.curDrawing = new Drawing(this.snap.group())
 
          this.allDrawings = []
@@ -109,6 +106,9 @@ class BasicBoard {
         this.snap.mousemove(e => { this.mousemove(e) })
         window.addEventListener('mouseup', e => { this.mouseup(e) })
     }
+    exportPicture() {
+        // let pic = this.snap.outerS
+    }
     newDrawingID(id: number) {
         for (let i = 0; i < this.allDrawings.length; i++) {
             let el = this.allDrawings[i]
@@ -117,7 +117,6 @@ class BasicBoard {
                 break
             }
         }
-        console.log("drawings: " + this.allDrawings.map(val => { return val.id }))
     }
     newActionID(id: number) {
         for (let i = 0; i < this.actions.length; i++) {
@@ -127,40 +126,32 @@ class BasicBoard {
                 break
             }
         }
-        console.log("actions: " + this.actions.map(val => { return val.id }))
-    }
-    switchDragMode() {
-        this.isDragMode = !this.isDragMode
-        if (this.isDragMode) {
-            this.snap.drag()
-        } else {
-            this.snap.undrag()
-        }
     }
     clear() {
         this.x = 0
         this.y = 0
         this.drawing = false
         this.snap.clear()
+        this.curDrawing = new Drawing(this.snap.group())
+        this.allDrawings = []
+        this.actions = []
     }
     generalDraw(e: MouseEvent) {
         this.x = e.offsetX
         this.y = e.offsetY
     }
     mousedown(e: MouseEvent) {
-        if (!this.isDragMode) {
             this.generalDraw(e)
             this.drawing = true
-        }
     } 
     mousemove(e: MouseEvent) {
-        if (this.drawing && !this.isDragMode) {
+        if (this.drawing) {
             this.curDrawing.fig.append(this.snap.line(this.x, this.y, e.offsetX, e.offsetY))
             this.generalDraw(e)
         }
     }
     mouseup(e: MouseEvent) {
-        if (this.drawing && !this.isDragMode) {
+        if (this.drawing) {
             this.drawing = false
             this.curDrawing.fig.append(this.snap.line(this.x, this.y, e.offsetX, e.offsetY))
             this.generalDraw(e)
@@ -180,25 +171,45 @@ class BasicBoard {
     } 
     stepBack() {
         if (this.allDrawings.length > 0) {
-            let last = this.allDrawings.pop()
-            last?.fig.remove()
+            if (this.allDrawings[this.allDrawings.length-1].id > 0) { 
+                let last = this.allDrawings.pop()
+                last?.fig.remove()
+                this.ws.send(JSON.stringify({
+                    type: MsgTypes.Action,
+                    data: {
+                        id: last?.id,
+                        type: ActionTypes.DrawingDeleted
+                    }
+                }))
+            }
         }
     }
-    drawPackage(msg: Action) {
+    newAction(msg: Action) {
         switch (msg.type) {
         case ActionTypes.NewDrawing:
             switch(msg.drawing.type) {
             case DrawingTypes.FreeMouse:
                 let drawing = new Drawing(this.snap.group())
+                drawing.id = msg.drawing.id
                 for (let i = 0; i < msg.drawing.data.length - 1; i++) {
                     drawing.fig.append(this.snap.line(msg.drawing.data[i].x, msg.drawing.data[i].y, msg.drawing.data[i + 1].x, msg.drawing.data[i + 1].y))
                 }
                 this.allDrawings.push(drawing)
                 msg.drawing = drawing
                 this.actions.push(msg)
-                console.log(this.actions)
             break;
         }
+        break;
+        case ActionTypes.DrawingDeleted:
+            let res: Drawing[] = []
+            for (let i = 0; i < this.allDrawings.length; i++) {
+                if (this.allDrawings[i].id != msg.id) {
+                   res.push(this.allDrawings[i])
+                } else {
+                    this.allDrawings[i].fig.remove()
+                }
+            }
+            this.allDrawings = res
         break;
     }
     }

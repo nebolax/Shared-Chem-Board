@@ -15,8 +15,7 @@ var DrawingTypes;
 var ActionTypes;
 (function (ActionTypes) {
     ActionTypes[ActionTypes["NewDrawing"] = 0] = "NewDrawing";
-    ActionTypes[ActionTypes["DrawingMoved"] = 1] = "DrawingMoved";
-    ActionTypes[ActionTypes["DrawingDeleted"] = 2] = "DrawingDeleted";
+    ActionTypes[ActionTypes["DrawingDeleted"] = 1] = "DrawingDeleted";
 })(ActionTypes || (ActionTypes = {}));
 var Modes;
 (function (Modes) {
@@ -76,7 +75,6 @@ var BasicBoard = /** @class */ (function () {
         this.x = 0;
         this.y = 0;
         this.isDrawable = true;
-        this.isDragMode = false;
         this.snap = Snap("#svg");
         this.snap.attr({
             strokeWidth: 2,
@@ -89,6 +87,9 @@ var BasicBoard = /** @class */ (function () {
         this.snap.mousemove(function (e) { _this.mousemove(e); });
         window.addEventListener('mouseup', function (e) { _this.mouseup(e); });
     }
+    BasicBoard.prototype.exportPicture = function () {
+        // let pic = this.snap.outerS
+    };
     BasicBoard.prototype.newDrawingID = function (id) {
         for (var i = 0; i < this.allDrawings.length; i++) {
             var el = this.allDrawings[i];
@@ -97,7 +98,6 @@ var BasicBoard = /** @class */ (function () {
                 break;
             }
         }
-        console.log("drawings: " + this.allDrawings.map(function (val) { return val.id; }));
     };
     BasicBoard.prototype.newActionID = function (id) {
         for (var i = 0; i < this.actions.length; i++) {
@@ -107,41 +107,32 @@ var BasicBoard = /** @class */ (function () {
                 break;
             }
         }
-        console.log("actions: " + this.actions.map(function (val) { return val.id; }));
-    };
-    BasicBoard.prototype.switchDragMode = function () {
-        this.isDragMode = !this.isDragMode;
-        if (this.isDragMode) {
-            this.snap.drag();
-        }
-        else {
-            this.snap.undrag();
-        }
     };
     BasicBoard.prototype.clear = function () {
         this.x = 0;
         this.y = 0;
         this.drawing = false;
         this.snap.clear();
+        this.curDrawing = new Drawing(this.snap.group());
+        this.allDrawings = [];
+        this.actions = [];
     };
     BasicBoard.prototype.generalDraw = function (e) {
         this.x = e.offsetX;
         this.y = e.offsetY;
     };
     BasicBoard.prototype.mousedown = function (e) {
-        if (!this.isDragMode) {
-            this.generalDraw(e);
-            this.drawing = true;
-        }
+        this.generalDraw(e);
+        this.drawing = true;
     };
     BasicBoard.prototype.mousemove = function (e) {
-        if (this.drawing && !this.isDragMode) {
+        if (this.drawing) {
             this.curDrawing.fig.append(this.snap.line(this.x, this.y, e.offsetX, e.offsetY));
             this.generalDraw(e);
         }
     };
     BasicBoard.prototype.mouseup = function (e) {
-        if (this.drawing && !this.isDragMode) {
+        if (this.drawing) {
             this.drawing = false;
             this.curDrawing.fig.append(this.snap.line(this.x, this.y, e.offsetX, e.offsetY));
             this.generalDraw(e);
@@ -158,25 +149,46 @@ var BasicBoard = /** @class */ (function () {
     };
     BasicBoard.prototype.stepBack = function () {
         if (this.allDrawings.length > 0) {
-            var last = this.allDrawings.pop();
-            last === null || last === void 0 ? void 0 : last.fig.remove();
+            if (this.allDrawings[this.allDrawings.length - 1].id > 0) {
+                var last = this.allDrawings.pop();
+                last === null || last === void 0 ? void 0 : last.fig.remove();
+                this.ws.send(JSON.stringify({
+                    type: MsgTypes.Action,
+                    data: {
+                        id: last === null || last === void 0 ? void 0 : last.id,
+                        type: ActionTypes.DrawingDeleted
+                    }
+                }));
+            }
         }
     };
-    BasicBoard.prototype.drawPackage = function (msg) {
+    BasicBoard.prototype.newAction = function (msg) {
         switch (msg.type) {
             case ActionTypes.NewDrawing:
                 switch (msg.drawing.type) {
                     case DrawingTypes.FreeMouse:
                         var drawing = new Drawing(this.snap.group());
+                        drawing.id = msg.drawing.id;
                         for (var i = 0; i < msg.drawing.data.length - 1; i++) {
                             drawing.fig.append(this.snap.line(msg.drawing.data[i].x, msg.drawing.data[i].y, msg.drawing.data[i + 1].x, msg.drawing.data[i + 1].y));
                         }
                         this.allDrawings.push(drawing);
                         msg.drawing = drawing;
                         this.actions.push(msg);
-                        console.log(this.actions);
                         break;
                 }
+                break;
+            case ActionTypes.DrawingDeleted:
+                var res = [];
+                for (var i = 0; i < this.allDrawings.length; i++) {
+                    if (this.allDrawings[i].id != msg.id) {
+                        res.push(this.allDrawings[i]);
+                    }
+                    else {
+                        this.allDrawings[i].fig.remove();
+                    }
+                }
+                this.allDrawings = res;
                 break;
         }
     };

@@ -36,5 +36,10 @@ var ObserverBoard = /** @class */ (function (_super) {
             _super.prototype.mouseup.call(this, e);
         }
     };
+    ObserverBoard.prototype.stepBack = function () {
+        if (this.isDrawable) {
+            _super.prototype.stepBack.call(this);
+        }
+    };
     return ObserverBoard;
 }(BasicBoard));

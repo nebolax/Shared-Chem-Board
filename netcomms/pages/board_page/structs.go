@@ -47,7 +47,7 @@ func (cl observerClient) isAdmin() bool         { return false }
 type msgType int
 
 const (
-	tDrawing    msgType = iota
+	tAction     msgType = iota
 	tSetId      msgType = iota
 	tObsStat    msgType = iota
 	tChview     msgType = iota
@@ -63,7 +63,6 @@ type anyMSG struct {
 type chviewMSG struct {
 	NView int `json:"nview"`
 }
-
 type SetIdMSG struct {
 	Property string `json:"property"`
 	ID       int    `json:"id"`

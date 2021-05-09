@@ -2,16 +2,13 @@ module admin_board {
 
 function initPage() {
     $("#views-nav").find("#general-page").on("click", switchView)
-    $("#stepback").on("click", () => { board.stepBack() })
-    $("#dragbtn").on("click", () => { board.switchDragMode() })
-}
+    $("#stepback").on("click", () => { board.stepBack() })}
 
 function msgParser(e: MessageEvent) {
     let msg = JSON.parse(e.data)
     switch(msg.type) {
     case MsgTypes.Action:
-        console.log(msg)
-        board.drawPackage(msg.data)
+        board.newAction(msg.data)
         break;
     case MsgTypes.SetId:
         switch (msg.data.property) {
@@ -75,10 +72,13 @@ function toGeneral() {
     }))
 }
 
-let ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname)
-let board = new AdminBoard(ws)
-let chat = new BasicChat(<HTMLDivElement>document.getElementById("chat"), ws)
+var ws: WebSocket
+var board: AdminBoard
+var chat: BasicChat
 
+ws = new WebSocket('ws://' + window.location.host + "/ws" + window.location.pathname)
+board = new AdminBoard(ws)
+chat = new BasicChat(<HTMLDivElement>document.getElementById("chat"), ws)
 initPage()
 ws.onmessage = msgParser
 }

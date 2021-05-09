@@ -152,6 +152,30 @@ func NewDrawing(boardID, viewID int, msg ActionMSG) (ActionMSG, bool) {
 	}
 }
 
+func DeleteDrawing(boardID, viewID, drawingID int) {
+	if b := boardPointerByID(boardID); b != nil {
+		if viewID == 0 {
+			res := DrawingsHistory{}
+			for _, el := range b.DrawingsHistory {
+				if el.ID != drawingID {
+					res = append(res, el)
+				}
+			}
+			b.DrawingsHistory = res
+		} else {
+			if obs := b.obspointerByID(viewID); obs != nil {
+				res := DrawingsHistory{}
+				for _, el := range obs.DrawingsHistory {
+					if el.ID != drawingID {
+						res = append(res, el)
+					}
+				}
+				obs.DrawingsHistory = res
+			}
+		}
+	}
+}
+
 func curTimeStamp() TimeStamp {
 	ct := time.Now()
 	return TimeStamp{

@@ -7,13 +7,25 @@ function initPage() {
     $("#personal-board").on("click", () => {
         switchBoard(2)
     })
+    $("#stepback").on("click", () => { board.stepBack() })
 }
 
 function msgParser(e: MessageEvent) {
     let msg = JSON.parse(e.data)
     switch(msg.type) {
     case MsgTypes.Action:
-        board.drawPackage(msg.data.points)
+        board.newAction(msg.data)
+        break;
+    case MsgTypes.SetId:
+        switch (msg.data.property) {
+            case "action":
+                board.newActionID(msg.data.id)
+            break;
+
+            case "drawing":
+                board.newDrawingID(msg.data.id)
+            break;
+        }
         break;
     case MsgTypes.InpChatMsg:
         chat.newMessage(msg.data)

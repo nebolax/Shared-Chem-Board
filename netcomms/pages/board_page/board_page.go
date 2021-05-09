@@ -11,6 +11,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+//TODO check if user has permission to do actions
+
 func procIncomingMessages(connID int) {
 	ar := clients
 	_ = ar
@@ -19,11 +21,17 @@ func procIncomingMessages(connID int) {
 		msg, ok := readSingleMessage(connID)
 		if ok {
 			switch typesMap[reflect.TypeOf(msg)] {
-			case tDrawing:
-				newMsg, _ := all_boards.NewDrawing(cl.boardID(), curView(cl), msg.(all_boards.ActionMSG))
-				newGroupMessage(cl.boardID(), curView(cl), connID, newMsg)
-				writeSingleMessage(connID, SetIdMSG{"action", newMsg.ID})
-				writeSingleMessage(connID, SetIdMSG{"drawing", newMsg.Drawing.ID})
+			case tAction:
+				prm := msg.(all_boards.ActionMSG)
+				if prm.Type == 0 {
+					newMsg, _ := all_boards.NewDrawing(cl.boardID(), curView(cl), prm)
+					newGroupMessage(cl.boardID(), curView(cl), connID, newMsg)
+					writeSingleMessage(connID, SetIdMSG{"action", newMsg.ID})
+					writeSingleMessage(connID, SetIdMSG{"drawing", newMsg.Drawing.ID})
+				} else if prm.Type == 1 {
+					all_boards.DeleteDrawing(cl.boardID(), curView(cl), prm.ID)
+					newGroupMessage(cl.boardID(), curView(cl), connID, prm)
+				}
 			case tChview:
 				tms := msg.(chviewMSG)
 				if cl.isAdmin() {
@@ -96,6 +104,7 @@ func regNewBoardObserver(r *http.Request, ws *websocket.Conn, boardID, userID in
 	connID := incrementor.Next("conns", false)
 	if all_boards.IsAdmin(userID, boardID) {
 		clients[connID] = adminClient{boardID, userID, 0, ws, &sync.Mutex{}}
+		updateObserversList(boardID)
 	} else {
 		clients[connID] = observerClient{boardID, userID, false, ws, &sync.Mutex{}}
 		updateObserversList(boardID)
