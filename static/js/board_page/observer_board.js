@@ -9,7 +9,6 @@ var observer_board;
             switchBoard(2);
         });
         $("#stepback").on("click", function () { board.stepBack(); });
-        $("#exportimg").on("click", function () { board.exportPicture(); });
     }
     function msgParser(e) {
         var msg = JSON.parse(e.data);

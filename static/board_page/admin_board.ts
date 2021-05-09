@@ -3,6 +3,7 @@ module admin_board {
 function initPage() {
     $("#views-nav").find("#general-page").on("click", switchView)
     $("#stepback").on("click", () => { board.stepBack() })}
+    $("#exportimg").on("click", () => { board.exportPicture() })
 
 function msgParser(e: MessageEvent) {
     let msg = JSON.parse(e.data)

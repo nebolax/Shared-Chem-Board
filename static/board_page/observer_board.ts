@@ -8,6 +8,7 @@ function initPage() {
         switchBoard(2)
     })
     $("#stepback").on("click", () => { board.stepBack() })
+    $("#exportimg").on("click", () => { board.exportPicture() })
 }
 
 function msgParser(e: MessageEvent) {

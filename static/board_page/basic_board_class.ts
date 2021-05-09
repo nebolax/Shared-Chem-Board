@@ -107,7 +107,8 @@ class BasicBoard {
         window.addEventListener('mouseup', e => { this.mouseup(e) })
     }
     exportPicture() {
-        // let pic = this.snap.outerS
+        //@ts-ignore
+        saveSvgAsPng(document.getElementById("svg"), "Онлайн-доска.png");
     }
     newDrawingID(id: number) {
         for (let i = 0; i < this.allDrawings.length; i++) {

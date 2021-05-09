@@ -88,8 +88,10 @@ var BasicBoard = /** @class */ (function () {
         window.addEventListener('mouseup', function (e) { _this.mouseup(e); });
     }
     BasicBoard.prototype.exportPicture = function () {
-        //@ts-ignore
-        saveSvgAsPng(document.getElementById("svg"), "Онлайн-доска.png");
+        var saveSvgAsPng;
+        var el = document.getElementById("svg");
+        // console.log(el)
+        saveSvgAsPng(el, "image.png");
     };
     BasicBoard.prototype.newDrawingID = function (id) {
         for (var i = 0; i < this.allDrawings.length; i++) {
