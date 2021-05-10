@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 var BoardsArray = []*DataElem{}
@@ -25,10 +27,10 @@ func init() {
 		ID           int64
 		AdminID      int64
 		Name         string
-		ObserversIDs []int64
-		DrawingsIDs  []int64
+		DrawingsIDs  pq.Int64Array
 		Password     string
-		ChatHistory  []int64
+		ChatHistory  []uint8
+		ObserversIDs []uint8
 	}{})
 	dbChmess := database.Query(`select * from "ChatsMessages"`, struct {
 		ID          int64
