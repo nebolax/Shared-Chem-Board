@@ -3,12 +3,15 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"reflect"
+	"sync"
 
 	_ "github.com/lib/pq"
 )
 
 var (
 	db *sql.DB
+	mu = sync.Mutex{}
 )
 
 const (
@@ -16,7 +19,7 @@ const (
 	port     = 5432
 	user     = "postgres"
 	password = "admin"
-	dbname   = "TestDB" //"ShChemBoard"
+	dbname   = "ShChemBoard"
 )
 
 type DBI struct {
@@ -25,20 +28,41 @@ type DBI struct {
 	Email interface{}
 }
 
-func observerWorker(inp chan string, out chan *sql.Rows) {
-	query := <-inp
+func loadVal(rows *sql.Rows, exval interface{}) []interface{} {
+	rf := reflect.ValueOf(exval)
+	res := []interface{}{}
+
+	for rows.Next() {
+		ar := make([]interface{}, rf.NumField())
+		ar1 := make([]interface{}, rf.NumField())
+		for i := 0; i < rf.NumField(); i++ {
+			ar1[i] = &ar[i]
+		}
+		if err := rows.Scan(ar1...); err != nil {
+			panic(err)
+		}
+
+		mr := reflect.New(reflect.Indirect(reflect.ValueOf(exval)).Type()).Elem()
+
+		for i := 0; i < rf.NumField(); i++ {
+			mr.Field(i).Set(reflect.ValueOf(ar[i]))
+		}
+		res = append(res, mr.Interface())
+
+	}
+
+	return res
+}
+
+func Query(query string, exval interface{}) []interface{} {
+	mu.Lock()
 	rows, err := db.Query(query)
 	if err != nil {
 		panic(err)
 	}
-	out <- rows
-}
-
-func NewDbObserver() (chan string, chan *sql.Rows) {
-	inp := make(chan string)
-	out := make(chan *sql.Rows)
-	go observerWorker(inp, out)
-	return inp, out
+	defer rows.Close()
+	mu.Unlock()
+	return loadVal(rows, exval)
 }
 
 func init() {
@@ -55,25 +79,4 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-
-	// rows, err := db.Query(``)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// defer rows.Close()
-	// users := make([]DBI, 0)
-
-	// for rows.Next() {
-	// 	var id interface{}
-	// 	var login interface{}
-	// 	var email interface{}
-	// 	if err := rows.Scan(&id, &login, &email); err != nil {
-	// 		panic(err)
-	// 	}
-	// 	user := DBI{id, login, email}
-	// 	users = append(users, user)
-	// }
-	// fmt.Printf("%v", users)
-
-	// fmt.Println("Successfully connected to db")
 }

@@ -1,6 +1,7 @@
 package all_boards
 
 import (
+	"ChemBoard/database"
 	"ChemBoard/netcomms/pages/account_logic"
 	"ChemBoard/utils/incrementor"
 	"fmt"
@@ -9,18 +10,60 @@ import (
 	"time"
 )
 
-var BoardsArray = []*DataElem{
-	// {1, 1, "First", "x", []int{1, 2, 3}, sync.Mutex{}},
-	// {2, 2, "Second", "y", []int{1, 2}, sync.Mutex{}},
-	// {3, 1, "Third", "z", []int{2, 3}, sync.Mutex{}},
-}
+var BoardsArray = []*DataElem{}
 
 //TODO check if userid is valid
 //TODO lock mutexes while working + boardsArray chould be private
 
+func init() {
+	dbActions := database.Query(`select * from "Actions"`, struct {
+		ID        int64
+		Type      int64
+		DrawingID int64
+	}{})
+	dbBoards := database.Query(`select * from "Boards"`, struct {
+		ID           int64
+		AdminID      int64
+		Name         string
+		ObserversIDs []int64
+		DrawingsIDs  []int64
+		Password     string
+		ChatHistory  []int64
+	}{})
+	dbChmess := database.Query(`select * from "ChatsMessages"`, struct {
+		ID          int64
+		SenderID    int64
+		TimeStampID int64
+		ContentID   int64
+	}{})
+	dbDrawings := database.Query(`select * from "Drawings"`, struct {
+		ID   int64
+		Type int64
+		Data string
+	}{})
+	dbMesscont := database.Query(`select * from "MessagesContent"`, struct {
+		ID   int64
+		Text string
+	}{})
+	dbObservers := database.Query(`select * from "Observers"`, struct {
+		ID          int64
+		DrawingHist int64
+		ChatHist    int64
+	}{})
+	dbTimestamps := database.Query(`select * from "TimeStamps"`, struct {
+		ID     int64
+		Year   int64
+		Month  int64
+		Day    int64
+		Hour   int64
+		Minute int64
+	}{})
+	fmt.Printf("%v\n%v\n%v\n%v\n%v\n%v\n%v\n\n", dbActions, dbBoards, dbChmess, dbDrawings, dbMesscont, dbObservers, dbTimestamps)
+}
+
 func CreateBoard(adminID int, name, pwd string) int {
 	nID := incrementor.Next("boards", true)
-	board := &Board{nID, adminID, name, pwd, []*Observer{}, DrawingsHistory{}, ChatHistory{}}
+	board := Board{nID, adminID, name, pwd, []*Observer{}, ActionsHistory{}, ChatHistory{}}
 	BoardsArray = append(BoardsArray, &DataElem{board, sync.Mutex{}})
 	return nID
 }
@@ -28,7 +71,7 @@ func CreateBoard(adminID int, name, pwd string) int {
 func BoardByID(id int) (Board, bool) {
 	for _, el := range BoardsArray {
 		if el.board.ID == id {
-			return *el.board, true
+			return el.board, true
 		}
 	}
 	return Board{}, false
@@ -55,7 +98,7 @@ func (b Board) ObserverByID(userID int) (Observer, bool) {
 func boardPointerByID(boardID int) *Board {
 	for _, el := range BoardsArray {
 		if el.board.ID == boardID {
-			return el.board
+			return &el.board
 		}
 	}
 	return nil
@@ -66,7 +109,7 @@ func SharedWithUser(userID int) []Board {
 	for _, el := range BoardsArray {
 		for _, obs := range el.board.Observers {
 			if obs.UserID == userID {
-				res = append(res, *el.board)
+				res = append(res, el.board)
 				break
 			}
 		}
@@ -95,7 +138,7 @@ func UserAdmin(userID int) []Board {
 	res := []Board{}
 	for _, el := range BoardsArray {
 		if el.board.Admin == userID {
-			res = append(res, *el.board)
+			res = append(res, el.board)
 		}
 	}
 
@@ -112,7 +155,7 @@ func IsAdmin(userID, boardID int) bool {
 func AddObserver(boardID, userID int, pwd string) bool {
 	if b := boardPointerByID(boardID); b != nil {
 		if b.Password == pwd {
-			b.Observers = append(b.Observers, &Observer{userID, DrawingsHistory{}, ChatHistory{}})
+			b.Observers = append(b.Observers, &Observer{userID, ActionsHistory{}, ChatHistory{}})
 			return true
 		}
 	}
@@ -124,7 +167,7 @@ func BoardsWithoutUser(key string, userID int) []Board {
 	res := []Board{}
 	for _, el := range BoardsArray {
 		if strings.Contains(el.board.Name, key) && !AvailableToUser(userID, el.board.ID) {
-			res = append(res, *el.board)
+			res = append(res, el.board)
 		}
 	}
 
@@ -140,10 +183,10 @@ func NewDrawing(boardID, viewID int, msg ActionMSG) (ActionMSG, bool) {
 	_ = bar
 	if b := boardPointerByID(boardID); b != nil {
 		if viewID == 0 {
-			b.DrawingsHistory = append(b.DrawingsHistory, msg)
+			b.Actions = append(b.Actions, msg)
 		} else {
 			if obs := b.obspointerByID(viewID); obs != nil {
-				obs.DrawingsHistory = append(obs.DrawingsHistory, msg)
+				obs.Actions = append(obs.Actions, msg)
 			}
 		}
 		return msg, true
@@ -155,22 +198,22 @@ func NewDrawing(boardID, viewID int, msg ActionMSG) (ActionMSG, bool) {
 func DeleteDrawing(boardID, viewID, drawingID int) {
 	if b := boardPointerByID(boardID); b != nil {
 		if viewID == 0 {
-			res := DrawingsHistory{}
-			for _, el := range b.DrawingsHistory {
+			res := ActionsHistory{}
+			for _, el := range b.Actions {
 				if el.ID != drawingID {
 					res = append(res, el)
 				}
 			}
-			b.DrawingsHistory = res
+			b.Actions = res
 		} else {
 			if obs := b.obspointerByID(viewID); obs != nil {
-				res := DrawingsHistory{}
-				for _, el := range obs.DrawingsHistory {
+				res := ActionsHistory{}
+				for _, el := range obs.Actions {
 					if el.ID != drawingID {
 						res = append(res, el)
 					}
 				}
-				obs.DrawingsHistory = res
+				obs.Actions = res
 			}
 		}
 	}
@@ -195,10 +238,10 @@ func NewChatMessage(boardID, viewID, senderID int, content ChatContent) (ChatMes
 
 		if b := boardPointerByID(boardID); b != nil {
 			if viewID == 0 {
-				b.ChatHistory = append(b.ChatHistory, msg)
+				b.Chat = append(b.Chat, msg)
 			} else {
 				if obs := b.obspointerByID(viewID); obs != nil {
-					obs.ChatHistory = append(obs.ChatHistory, msg)
+					obs.Chat = append(obs.Chat, msg)
 				} else {
 					return ChatMessage{}, false
 				}

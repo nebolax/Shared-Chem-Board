@@ -16,26 +16,26 @@ type ActionMSG struct {
 	Drawing Drawing `json:"drawing"`
 }
 
-type DrawingsHistory []ActionMSG
+type ActionsHistory []ActionMSG
 
 type Board struct {
-	ID              int
-	Admin           int
-	Name            string
-	Password        string
-	Observers       []*Observer
-	DrawingsHistory DrawingsHistory
-	ChatHistory     ChatHistory
+	ID        int
+	Admin     int
+	Name      string
+	Password  string
+	Observers []*Observer
+	Actions   ActionsHistory
+	Chat      ChatHistory
 }
 
 type Observer struct {
-	UserID          int
-	DrawingsHistory DrawingsHistory
-	ChatHistory     ChatHistory
+	UserID  int
+	Actions ActionsHistory
+	Chat    ChatHistory
 }
 
 type DataElem struct {
-	board *Board
+	board Board
 	mu    sync.Mutex
 }
 
