@@ -22,8 +22,3 @@ type ChatMessage struct {
 	TimeStamp TimeStamp            `json:"timestamp"`
 	Content   ChatContent          `json:"content"`
 }
-
-type Chat struct {
-	ID      int
-	History ChatHistory
-}

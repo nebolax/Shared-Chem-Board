@@ -30,7 +30,11 @@
         </div>
     </div>
     <div id="chat" style="display: block; float: left; margin-right: 1%;">
-        <div id="chat-container">
+        <div draggable="true">
+            <input type="text" placeholder="Текст сообщения" id="new-chat-msg-text">
+            <button type="button" id="send-new-chat-msg">Отправить</button>
+        </div>
+        <div id="chat-container" style="max-height: 500px; overflow: scroll;">
 
         </div>
         <div>
@@ -41,10 +45,6 @@
                     <hr>
                 </div>
             </template>
-        </div>
-        <div>
-            <input type="text" placeholder="Текст сообщения" id="new-chat-msg-text">
-            <button type="button" id="send-new-chat-msg">Отправить</button>
         </div>
     </div>
 
