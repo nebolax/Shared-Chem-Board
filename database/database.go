@@ -29,21 +29,18 @@ type DBI struct {
 	Email interface{}
 }
 
-func Uint8To64Ar(inp []uint8) (res []uint64) {
-
+func uint8To64Ar(inp []uint8) (res []uint64) {
 	res = []uint64{}
 	for i := 0; i < len(inp); i++ {
 		if i%8 == 0 {
 			res = append(res, 0)
 		}
 		res[i/8] += uint64(inp[i]) * uint64(math.Pow(256, 7-float64(i%8)))
-		fmt.Printf("%v\n", res)
 	}
-
 	return
 }
 
-func Uint64To8Ar(inp []uint64) (res []uint8) {
+func uint64To8Ar(inp []uint64) (res []uint8) {
 	res = []uint8{}
 	for i := 0; i < len(inp); i++ {
 		buf := make([]uint8, 8)
@@ -53,7 +50,6 @@ func Uint64To8Ar(inp []uint64) (res []uint8) {
 		}
 		res = append(res, buf...)
 	}
-
 	return
 }
 
@@ -75,10 +71,11 @@ func loadVal(rows *sql.Rows, exval interface{}) []interface{} {
 		}
 
 		for i := 0; i < rf.NumField(); i++ {
-			switch reflect.TypeOf(ar[i]) {
-			case reflect.TypeOf([]uint8{}):
-				// v := ar[i].([]uint8)
-				// mr.Field(i).Set(reflect.ValueOf((pq.Int64Array)(v)))
+			switch reflect.TypeOf(mr.Field(i).Interface()) {
+			case reflect.TypeOf([]uint64{}):
+				mr.Field(i).Set(reflect.ValueOf(uint8To64Ar(ar[i].([]uint8))))
+			case reflect.TypeOf([]uint64{0}[0]):
+				mr.Field(i).Set(reflect.ValueOf(uint64(ar[i].(int64))))
 			default:
 				mr.Field(i).Set(reflect.ValueOf(ar[i]))
 			}
@@ -90,16 +87,29 @@ func loadVal(rows *sql.Rows, exval interface{}) []interface{} {
 	return res
 }
 
-func Query(query string, exval interface{}) []interface{} {
-	// mu.Lock()
-	// rows, err := db.Query(query)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// defer rows.Close()
-	// mu.Unlock()
-	// return loadVal(rows, exval)
-	return nil
+func Query(query string, exval interface{}, qargs ...interface{}) []interface{} {
+	// defer func() {
+	// 	if r := recover(); r != nil {
+	// 		println(query)
+	// 		println(r.(error).Error())
+	// 	}
+	// }()
+	resargs := []interface{}{}
+	for _, arg := range qargs {
+		if reflect.TypeOf(arg) == reflect.TypeOf([]uint64{}) {
+			resargs = append(resargs, uint64To8Ar(arg.([]uint64)))
+		} else {
+			resargs = append(resargs, arg)
+		}
+	}
+	mu.Lock()
+	rows, err := db.Query(query, resargs...)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+	mu.Unlock()
+	return loadVal(rows, exval)
 }
 
 func init() {

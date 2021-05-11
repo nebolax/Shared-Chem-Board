@@ -14,7 +14,7 @@ var (
 		reflect.TypeOf(allObsStatMSG{}):          tObsStat,
 		reflect.TypeOf(chviewMSG{}):              tChview,
 		reflect.TypeOf(all_boards.ChatContent{}): tInpChatMsg,
-		reflect.TypeOf(all_boards.ChatMessage{}): tOutChatMsg,
+		reflect.TypeOf(chatMessage{}):            tOutChatMsg,
 	}
 )
 

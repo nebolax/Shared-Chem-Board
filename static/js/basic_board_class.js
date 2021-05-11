@@ -151,15 +151,13 @@ var BasicBoard = /** @class */ (function () {
     BasicBoard.prototype.stepBack = function () {
         if (this.allDrawings.length > 0) {
             if (this.allDrawings[this.allDrawings.length - 1].id > 0) {
-                var last = this.allDrawings.pop();
-                last === null || last === void 0 ? void 0 : last.fig.remove();
-                this.ws.send(JSON.stringify({
-                    type: MsgTypes.Action,
-                    data: {
-                        id: last === null || last === void 0 ? void 0 : last.id,
-                        type: ActionTypes.DrawingDeleted
-                    }
-                }));
+                var action = {
+                    id: 0,
+                    type: ActionTypes.DrawingDeleted,
+                    drawing: this.curDrawing
+                };
+                this.newAction(action);
+                this.sendAction(action);
             }
         }
     };
@@ -180,16 +178,11 @@ var BasicBoard = /** @class */ (function () {
                 }
                 break;
             case ActionTypes.DrawingDeleted:
-                var res = [];
                 for (var i = 0; i < this.allDrawings.length; i++) {
-                    if (this.allDrawings[i].id != msg.id) {
-                        res.push(this.allDrawings[i]);
-                    }
-                    else {
+                    if (this.allDrawings[i].id == msg.id) {
                         this.allDrawings[i].fig.remove();
                     }
                 }
-                this.allDrawings = res;
                 break;
         }
     };

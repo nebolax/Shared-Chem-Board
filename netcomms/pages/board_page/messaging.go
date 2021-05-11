@@ -4,9 +4,9 @@ import (
 	"ChemBoard/all_boards"
 )
 
-var clients = make(map[int]sockClient)
+var clients = make(map[uint64]sockClient)
 
-func sendHistory(connID, boardID, viewID int) {
+func sendHistory(connID, boardID, viewID uint64) {
 	if b, ok := all_boards.BoardByID(boardID); ok {
 		var drawingsHist all_boards.ActionsHistory
 		var chatHist all_boards.ChatHistory
@@ -23,12 +23,12 @@ func sendHistory(connID, boardID, viewID int) {
 			writeSingleMessage(connID, pack)
 		}
 		for _, pack := range chatHist {
-			writeSingleMessage(connID, pack)
+			writeSingleMessage(connID, prepChatMsg(pack))
 		}
 	}
 }
 
-func newGroupMessage(boardID, viewID, exceptConn int, msg interface{}) {
+func newGroupMessage(boardID, viewID, exceptConn uint64, msg interface{}) {
 	for _, cl := range clients {
 		if cl.boardID() == boardID {
 			if cl.isAdmin() {
@@ -44,7 +44,7 @@ func newGroupMessage(boardID, viewID, exceptConn int, msg interface{}) {
 	}
 }
 
-func sendtoUserDevices(userID, exceptConn int, message interface{}) {
+func sendtoUserDevices(userID, exceptConn uint64, message interface{}) {
 	for connID, client := range clients {
 		if client.userID() == userID && connID != exceptConn {
 			writeSingleMessage(connID, message)
@@ -52,7 +52,7 @@ func sendtoUserDevices(userID, exceptConn int, message interface{}) {
 	}
 }
 
-func writeSingleMessage(connID int, msg interface{}) {
+func writeSingleMessage(connID uint64, msg interface{}) {
 	clients[connID].mu().Lock()
 	defer clients[connID].mu().Unlock()
 
@@ -64,14 +64,14 @@ func writeSingleMessage(connID int, msg interface{}) {
 	}
 }
 
-func delClient(connID int) {
+func delClient(connID uint64) {
 	boardID := clients[connID].boardID()
 	clients[connID].sock().Close()
 	delete(clients, connID)
 	updateObserversList(boardID)
 }
 
-func readSingleMessage(connID int) (interface{}, bool) {
+func readSingleMessage(connID uint64) (interface{}, bool) {
 	var msg anyMSG
 	err := clients[connID].sock().ReadJSON(&msg)
 	if err != nil {

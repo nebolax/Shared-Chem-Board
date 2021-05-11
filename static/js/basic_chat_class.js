@@ -8,9 +8,7 @@ var Observer = /** @class */ (function () {
 }());
 var User = /** @class */ (function () {
     function User(msg) {
-        this.id = msg.id;
-        this.login = msg.login;
-        this.email = msg.email;
+        this.nickname = msg.nickname;
     }
     return User;
 }());
@@ -39,7 +37,7 @@ var TimeStamp = /** @class */ (function () {
 var ChatMessage = /** @class */ (function () {
     function ChatMessage(msg) {
         this.id = msg.id;
-        this.sender = new User(msg.sender);
+        this.sender = new User(msg.senderinfo);
         this.timestamp = new TimeStamp(msg.timestamp);
         this.content = new ChatMsgContent(msg.content);
     }
@@ -85,12 +83,13 @@ var BasicChat = /** @class */ (function () {
         });
     };
     BasicChat.prototype.newMessage = function (inpMsg) {
+        console.log(inpMsg);
         var msg = new ChatMessage(inpMsg);
         this.history.push(msg);
         var clone = document.importNode(this.msgTemplate.content, true);
         clone.querySelector(".chatmsg-text").innerHTML = msg.content.text;
         var timestamp = msg.timestamp.time();
-        clone.querySelector(".chatmsg-info").innerHTML = msg.sender.login + "  -  " + timestamp;
+        clone.querySelector(".chatmsg-info").innerHTML = msg.sender.nickname + "  -  " + timestamp;
         this.chatContainer.appendChild(clone);
     };
     return BasicChat;

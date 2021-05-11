@@ -10,18 +10,18 @@ import (
 //TODO user info should be taken from database, not from coockies
 
 var (
-	passwords = make(map[int]string)
+	passwords = make(map[uint64]string)
 )
 
 type DBUser struct {
-	ID    int    `json:"id"`
+	ID    uint64 `json:"id"`
 	Login string `json:"login"`
 	Email string `json:"email"`
 }
 
 var users []DBUser
 
-func GetUserByID(userID int) (DBUser, bool) {
+func GetUserByID(userID uint64) (DBUser, bool) {
 	for _, user := range users {
 		if user.ID == userID {
 			return user, true
@@ -81,7 +81,7 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 }
 
 //RegUser is func
-func RegUser(login, email, pwd string) (int, status.StatusCode) {
+func RegUser(login, email, pwd string) (uint64, status.StatusCode) {
 	_, exbylog := userFromDB(login)
 	_, exbymemail := userFromDB(email)
 	if exbylog || exbymemail {
@@ -117,7 +117,7 @@ func userFromDB(logmail string) (DBUser, bool) {
 	return DBUser{}, false
 }
 
-func UserLogin(userID int) string {
+func UserLogin(userID uint64) string {
 	for _, user := range users {
 		if user.ID == userID {
 			return user.Login

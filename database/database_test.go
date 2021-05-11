@@ -22,7 +22,7 @@ func TestUint8To64Ar(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run("test", func(t *testing.T) {
-			if gotRes := Uint8To64Ar(tt.args.inp); !reflect.DeepEqual(gotRes, tt.wantRes) {
+			if gotRes := uint8To64Ar(tt.args.inp); !reflect.DeepEqual(gotRes, tt.wantRes) {
 				t.Errorf("Uint8To64Ar() = %v, want %v", gotRes, tt.wantRes)
 			}
 		})
@@ -44,7 +44,7 @@ func TestUint64To8Ar(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run("test", func(t *testing.T) {
-			if gotRes := Uint64To8Ar(tt.args.inp); !reflect.DeepEqual(gotRes, tt.wantRes) {
+			if gotRes := uint64To8Ar(tt.args.inp); !reflect.DeepEqual(gotRes, tt.wantRes) {
 				t.Errorf("Uint64To8Ar() = %v, want %v", gotRes, tt.wantRes)
 			}
 		})

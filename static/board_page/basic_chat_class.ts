@@ -9,14 +9,10 @@ class Observer {
 }
 
 class User {
-    id: number;
-    login: string;
-    email: string;
+    nickname: string;
 
     constructor(msg: any) {
-        this.id = msg.id
-        this.login = msg.login
-        this.email = msg.email
+        this.nickname = msg.nickname
     }
 }
 
@@ -58,7 +54,7 @@ class ChatMessage {
 
     constructor(msg: any) {
         this.id = msg.id
-        this.sender = new User(msg.sender)
+        this.sender = new User(msg.senderinfo)
         this.timestamp = new TimeStamp(msg.timestamp)
         this.content = new ChatMsgContent(msg.content)
     }
@@ -108,12 +104,13 @@ class BasicChat {
         });
     }
     newMessage(inpMsg: any) {
+        console.log(inpMsg)
         let msg = new ChatMessage(inpMsg)
         this.history.push(msg)
         let clone = document.importNode(this.msgTemplate.content, true)
         clone.querySelector(".chatmsg-text")!!.innerHTML = msg.content.text
         let timestamp = msg.timestamp.time()
-        clone.querySelector(".chatmsg-info")!!.innerHTML = msg.sender.login + "  -  " + timestamp
+        clone.querySelector(".chatmsg-info")!!.innerHTML = msg.sender.nickname + "  -  " + timestamp
         this.chatContainer.appendChild(clone)
     }
 }

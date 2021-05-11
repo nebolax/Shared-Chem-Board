@@ -18,7 +18,7 @@ func HandleSockets(w http.ResponseWriter, r *http.Request) {
 		ws, _ := websocket.Upgrade(w, r, nil, 0, 0)
 		vars := mux.Vars(r)
 		boardID, _ := strconv.Atoi(vars["id"])
-		if board, ok := all_boards.BoardByID(boardID); ok {
+		if board, ok := all_boards.BoardByID(uint64(boardID)); ok {
 			regNewBoardObserver(r, ws, board.ID, account_logic.GetUserID(r))
 		}
 	}
@@ -30,11 +30,11 @@ func Page(w http.ResponseWriter, r *http.Request) {
 	} else {
 		vars := mux.Vars(r)
 		boardID, _ := strconv.Atoi(vars["id"])
-		if !all_boards.AvailableToUser(account_logic.GetUserID(r), boardID) {
+		if !all_boards.AvailableToUser(account_logic.GetUserID(r), uint64(boardID)) {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		} else {
 			var tmpl *template.Template
-			if all_boards.IsAdmin(account_logic.GetUserID(r), boardID) {
+			if all_boards.IsAdmin(account_logic.GetUserID(r), uint64(boardID)) {
 				tmpl, _ = template.ParseFiles("./static/board_page/admin_board.html")
 			} else {
 				tmpl, _ = template.ParseFiles("./static/board_page/observer_board.html")

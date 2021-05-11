@@ -48,16 +48,16 @@ func IsUserLoggedIn(r *http.Request) bool {
 }
 
 //SetUserID id func to set user id:D!!
-func SetUserID(w http.ResponseWriter, r *http.Request, id int) {
+func SetUserID(w http.ResponseWriter, r *http.Request, id uint64) {
 	session, _ := store.Get(r, "user-info")
 	session.Values["userid"] = id
 	session.Save(r, w)
 }
 
 //GetUserID is func
-func GetUserID(r *http.Request) int {
+func GetUserID(r *http.Request) uint64 {
 	session, _ := store.Get(r, "user-info")
-	id, ok := session.Values["userid"].(int)
+	id, ok := session.Values["userid"].(uint64)
 	if !ok {
 		return 0
 	}

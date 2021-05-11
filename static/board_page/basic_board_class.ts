@@ -173,15 +173,13 @@ class BasicBoard {
     stepBack() {
         if (this.allDrawings.length > 0) {
             if (this.allDrawings[this.allDrawings.length-1].id > 0) { 
-                let last = this.allDrawings.pop()
-                last?.fig.remove()
-                this.ws.send(JSON.stringify({
-                    type: MsgTypes.Action,
-                    data: {
-                        id: last?.id,
-                        type: ActionTypes.DrawingDeleted
-                    }
-                }))
+                let action: Action = {
+                    id: 0,
+                    type: ActionTypes.DrawingDeleted,
+                    drawing: this.curDrawing
+                }
+                this.newAction(action)
+                this.sendAction(action)
             }
         }
     }
@@ -202,15 +200,11 @@ class BasicBoard {
         }
         break;
         case ActionTypes.DrawingDeleted:
-            let res: Drawing[] = []
             for (let i = 0; i < this.allDrawings.length; i++) {
-                if (this.allDrawings[i].id != msg.id) {
-                   res.push(this.allDrawings[i])
-                } else {
+                if (this.allDrawings[i].id == msg.id) {
                     this.allDrawings[i].fig.remove()
                 }
             }
-            this.allDrawings = res
         break;
     }
     }

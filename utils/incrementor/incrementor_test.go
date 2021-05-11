@@ -9,7 +9,7 @@ func TestNext(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want int
+		want uint64
 	}{
 		{"emptykey", args{""}, 1},
 		{"emptykey", args{""}, 2},

@@ -5,31 +5,31 @@ import (
 )
 
 type Drawing struct {
-	ID   int         `json:"id"`
-	Type int         `json:"type"`
+	ID   uint64      `json:"id"`
+	Type uint64      `json:"type"`
 	Data interface{} `json:"data"`
 }
 
 type ActionMSG struct {
-	ID      int     `json:"id"`
-	Type    int     `json:"type"`
+	ID      uint64  `json:"id"`
+	Type    uint64  `json:"type"`
 	Drawing Drawing `json:"drawing"`
 }
 
 type ActionsHistory []ActionMSG
 
 type Board struct {
-	ID        int
-	Admin     int
+	ID        uint64
+	Admin     uint64
 	Name      string
 	Password  string
-	Observers []*Observer
+	Observers []Observer
 	Actions   ActionsHistory
 	Chat      ChatHistory
 }
 
 type Observer struct {
-	UserID  int
+	UserID  uint64
 	Actions ActionsHistory
 	Chat    ChatHistory
 }

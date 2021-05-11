@@ -10,11 +10,11 @@ func init() {
 	}
 }
 
-func Next(key string, save bool) int {
+func Next(key string, save bool) uint64 {
 	if values[key] == nil {
 		values[key] = 0.0
 	}
 	values[key] = values[key].(float64) + 1
 	configs.Set("incrementor", values)
-	return int(values[key].(float64))
+	return uint64(values[key].(float64))
 }
