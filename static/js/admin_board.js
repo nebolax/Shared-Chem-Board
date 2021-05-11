@@ -8,7 +8,6 @@ var admin_board;
     $("#exportimg").on("click", function () { board.exportPicture(); });
     function msgParser(e) {
         var msg = JSON.parse(e.data);
-        console.log(msg);
         switch (msg.type) {
             case MsgTypes.Action:
                 board.newAction(msg.data);

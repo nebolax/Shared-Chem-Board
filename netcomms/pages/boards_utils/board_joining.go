@@ -19,7 +19,10 @@ func JoinBoardPage(w http.ResponseWriter, r *http.Request) {
 		boardID, _ := strconv.Atoi(vars["id"])
 		tmpl, _ := template.ParseFiles("./static/boards_utils/board_joining.html")
 		b, _ := all_boards.BoardByID(uint64(boardID))
-		tmpl.Execute(w, b)
+		tmpl.Execute(w, struct {
+			Name string
+			Code string
+		}{b.Name, ""})
 	}
 }
 
@@ -33,6 +36,16 @@ func ProcBoardJoining(w http.ResponseWriter, r *http.Request) {
 		boardID, _ := strconv.Atoi(vars["id"])
 		if all_boards.AddObserver(uint64(boardID), account_logic.GetUserID(r), inpPwd) {
 			http.Redirect(w, r, fmt.Sprintf("/board%d", boardID), http.StatusSeeOther)
+		} else {
+			tmpl, _ := template.ParseFiles("./static/boards_utils/board_joining.html")
+			b, _ := all_boards.BoardByID(uint64(boardID))
+			tmpl.Execute(w, struct {
+				Name string
+				Code string
+			}{
+				b.Name,
+				"Неправильный пароль доски",
+			})
 		}
 	}
 }

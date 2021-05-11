@@ -12,18 +12,7 @@ var (
 )
 
 func init() {
-	// conf_key := configs.Get("coockies-key")
-	// if conf_key == nil {
-	// 	nkey := 1000000000000000
-	// 	configs.Set("coockies-key", nkey)
-	// 	conf_key = nkey
-	// }
-	// num_key := conf_key.(float64)
-	// key = []byte(fmt.Sprint(num_key))
-	// store = sessions.NewCookieStore(key)
-	// num_key++
-	// configs.Set("coockies-key", num_key)
-	key = []byte("sh-chemboard0101")
+	key = []byte("sh-chemboard0103")
 	store = sessions.NewCookieStore(key)
 }
 
