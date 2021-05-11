@@ -151,12 +151,15 @@ var BasicBoard = /** @class */ (function () {
     BasicBoard.prototype.stepBack = function () {
         if (this.allDrawings.length > 0) {
             if (this.allDrawings[this.allDrawings.length - 1].id > 0) {
+                var last = this.allDrawings.pop();
+                last === null || last === void 0 ? void 0 : last.fig.remove();
+                console.log(last === null || last === void 0 ? void 0 : last.id);
                 var action = {
                     id: 0,
                     type: ActionTypes.DrawingDeleted,
-                    drawing: this.curDrawing
+                    drawing: last
                 };
-                this.newAction(action);
+                this.actions.push(action);
                 this.sendAction(action);
             }
         }
@@ -179,7 +182,7 @@ var BasicBoard = /** @class */ (function () {
                 break;
             case ActionTypes.DrawingDeleted:
                 for (var i = 0; i < this.allDrawings.length; i++) {
-                    if (this.allDrawings[i].id == msg.id) {
+                    if (this.allDrawings[i].id == msg.drawing.id) {
                         this.allDrawings[i].fig.remove();
                     }
                 }

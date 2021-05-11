@@ -7,6 +7,7 @@ function initPage() {
 
 function msgParser(e: MessageEvent) {
     let msg = JSON.parse(e.data)
+    console.log(msg)
     switch(msg.type) {
     case MsgTypes.Action:
         board.newAction(msg.data)

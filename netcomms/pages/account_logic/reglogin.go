@@ -1,25 +1,36 @@
 package account_logic
 
 import (
+	"ChemBoard/database"
 	"ChemBoard/utils/incrementor"
 	"ChemBoard/utils/status"
 	"html/template"
 	"net/http"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 //TODO user info should be taken from database, not from coockies
-
-var (
-	passwords = make(map[uint64]string)
-)
-
 type DBUser struct {
-	ID    uint64 `json:"id"`
-	Login string `json:"login"`
-	Email string `json:"email"`
+	ID       uint64
+	Login    string
+	Email    string
+	PassHash string
 }
 
 var users []DBUser
+
+func dconv(inp []interface{}) []DBUser {
+	res := []DBUser{}
+	for _, el := range inp {
+		res = append(res, el.(DBUser))
+	}
+	return res
+}
+
+func init() {
+	users = dconv(database.Query(`select * from "UsersInfo"`, DBUser{}))
+}
 
 func GetUserByID(userID uint64) (DBUser, bool) {
 	for _, user := range users {
@@ -68,10 +79,8 @@ func ProcLogin(w http.ResponseWriter, r *http.Request) {
 		SetUserID(w, r, user.ID)
 		SetUserInfo(w, r, map[interface{}]interface{}{"login": user.Login, "email": user.Email})
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
-	case status.NoSuchUser:
-		tmpl.Execute(w, "user does not exist")
-	case status.IncorrectPassword:
-		tmpl.Execute(w, "incorrect password")
+	case status.IncorrectLogPass:
+		tmpl.Execute(w, "Логин или пароль неверны")
 	}
 }
 
@@ -88,21 +97,26 @@ func RegUser(login, email, pwd string) (uint64, status.StatusCode) {
 		return 0, status.UserAlreadyExists
 	}
 	id := incrementor.Next("users", true)
-	user := DBUser{id, login, email}
-	passwords[id] = pwd
+	pb, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)
+	passhash := string(pb)
+	if err != nil {
+		panic(err)
+	}
+	user := DBUser{id, login, email, passhash}
 	users = append(users, user)
+	database.Query(`insert into "UsersInfo" values($1, $2, $3, $4)`, 0, id, login, email, passhash)
 	return id, status.OK
 }
 
 //LoginUser is func
 func LoginUser(logmail, inpPwd string) (DBUser, status.StatusCode) {
-	if user, ok := userFromDB(logmail); ok {
-		return DBUser{}, status.NoSuchUser
+	if duser, ok := userFromDB(logmail); ok {
+		return DBUser{}, status.IncorrectLogPass
 	} else {
-		if passwords[user.ID] != inpPwd {
-			return DBUser{}, status.IncorrectPassword
+		if err := bcrypt.CompareHashAndPassword([]byte(duser.PassHash), []byte(inpPwd)); err != nil {
+			return DBUser{}, status.IncorrectLogPass
 		} else {
-			return user, status.OK
+			return duser, status.OK
 		}
 	}
 }

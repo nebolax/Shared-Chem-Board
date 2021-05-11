@@ -7,9 +7,7 @@ const (
 
 	UserRegFail StatusCode = "Couldn't register user"
 
-	NoSuchUser StatusCode = "User with such login doesn't exists"
-
-	IncorrectPassword StatusCode = "Incorrect password"
+	IncorrectLogPass StatusCode = "Incorrect password"
 
 	UserAlreadyExists StatusCode = "User with such nickname or password is already registered"
 

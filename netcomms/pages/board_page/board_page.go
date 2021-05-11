@@ -4,6 +4,7 @@ import (
 	"ChemBoard/all_boards"
 	"ChemBoard/netcomms/pages/account_logic"
 	"ChemBoard/utils/incrementor"
+	"fmt"
 	"net/http"
 	"reflect"
 	"sync"
@@ -37,6 +38,7 @@ func procIncomingMessages(connID uint64) {
 				writeSingleMessage(connID, SetIdMSG{"action", newMsg.ID})
 				writeSingleMessage(connID, SetIdMSG{"drawing", newMsg.Drawing.ID})
 			case tChview:
+				fmt.Println("chviewing")
 				tms := msg.(chviewMSG)
 				if cl.isAdmin() {
 					nc := cl.(adminClient)
@@ -51,7 +53,6 @@ func procIncomingMessages(connID uint64) {
 			case tInpChatMsg:
 				msgContent := msg.(all_boards.ChatContent)
 				if newMsg, ok := all_boards.NewChatMessage(cl.boardID(), curView(cl), cl.userID(), msgContent); ok {
-
 					newGroupMessage(cl.boardID(), curView(cl), 0, prepChatMsg(newMsg))
 				}
 			}

@@ -23,12 +23,13 @@ type Board struct {
 	Admin     uint64
 	Name      string
 	Password  string
-	Observers []Observer
+	Observers []*Observer
 	Actions   ActionsHistory
 	Chat      ChatHistory
 }
 
 type Observer struct {
+	DBID    uint64
 	UserID  uint64
 	Actions ActionsHistory
 	Chat    ChatHistory

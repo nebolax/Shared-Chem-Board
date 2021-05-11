@@ -88,12 +88,12 @@ func loadVal(rows *sql.Rows, exval interface{}) []interface{} {
 }
 
 func Query(query string, exval interface{}, qargs ...interface{}) []interface{} {
-	// defer func() {
-	// 	if r := recover(); r != nil {
-	// 		println(query)
-	// 		println(r.(error).Error())
-	// 	}
-	// }()
+	defer func() {
+		if r := recover(); r != nil {
+			println(query)
+			println(r.(error).Error())
+		}
+	}()
 	resargs := []interface{}{}
 	for _, arg := range qargs {
 		if reflect.TypeOf(arg) == reflect.TypeOf([]uint64{}) {

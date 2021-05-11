@@ -4,7 +4,6 @@ import (
 	"ChemBoard/database"
 	"ChemBoard/utils/incrementor"
 	"encoding/json"
-	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -132,15 +131,7 @@ func init() {
 	dbTimestamps := ft(database.Query(`select * from "TimeStamps"`, sTimestamp{}))
 
 	// fmt.Printf("%v\n%v\n%v\n%v\n%v\n%v\n%v\n\n", dbActions, dbBoards, dbChmess, dbDrawings, dbMesscont, dbObservers, dbTimestamps)
-	for _, b := range dbBoards {
-		fmt.Printf("%v\n", b)
-	}
-	println("*************")
-
 	loadRealData(dbActions, dbBoards, dbChmess, dbDrawings, dbMesscont, dbObservers, dbTimestamps)
-	for _, el := range BoardsArray {
-		fmt.Printf("%v\n", el)
-	}
 }
 
 func loadDrawing(dbDrawings []sDrawing, id uint64) Drawing {
@@ -209,8 +200,8 @@ func loadChat(dbChmess []sChmess, dbMesscont []sMesscont, dbTimestamps []sTimest
 	return res
 }
 
-func loadObservers(dbObservers []sObserver, dbActions []sAction, dbDrawings []sDrawing, dbChmess []sChmess, dbMesscont []sMesscont, dbTimestamps []sTimestamp, obsIds []uint64) []Observer {
-	res := []Observer{}
+func loadObservers(dbObservers []sObserver, dbActions []sAction, dbDrawings []sDrawing, dbChmess []sChmess, dbMesscont []sMesscont, dbTimestamps []sTimestamp, obsIds []uint64) []*Observer {
+	res := []*Observer{}
 	for _, dbobs := range dbObservers {
 		cont := false
 		for _, obsid := range obsIds {
@@ -220,7 +211,7 @@ func loadObservers(dbObservers []sObserver, dbActions []sAction, dbDrawings []sD
 			}
 		}
 		if cont {
-			res = append(res, Observer{dbobs.UserID, loadActions(dbActions, dbDrawings, dbobs.ActionsHist), loadChat(dbChmess, dbMesscont, dbTimestamps, dbobs.ChatHist)})
+			res = append(res, &Observer{dbobs.ID, dbobs.UserID, loadActions(dbActions, dbDrawings, dbobs.ActionsHist), loadChat(dbChmess, dbMesscont, dbTimestamps, dbobs.ChatHist)})
 		}
 	}
 	return res
@@ -245,7 +236,7 @@ func loadRealData(dbActions []sAction, dbBoards []sBoard, dbChmess []sChmess, db
 
 func CreateBoard(adminID uint64, name, pwd string) uint64 {
 	nID := incrementor.Next("boards", true)
-	board := Board{nID, adminID, name, pwd, []Observer{}, ActionsHistory{}, ChatHistory{}}
+	board := Board{nID, adminID, name, pwd, []*Observer{}, ActionsHistory{}, ChatHistory{}}
 	database.Query(`insert into "Boards" values($1, $2, $3, $4, '', '', '')`, 0, nID, adminID, name, pwd)
 	BoardsArray = append(BoardsArray, &DataElem{board, sync.Mutex{}})
 	return nID
@@ -263,7 +254,7 @@ func BoardByID(id uint64) (Board, bool) {
 func (b *Board) obspointerByID(userID uint64) *Observer {
 	for _, obs := range b.Observers {
 		if obs.UserID == userID {
-			return &obs
+			return obs
 		}
 	}
 	return nil
@@ -272,7 +263,7 @@ func (b *Board) obspointerByID(userID uint64) *Observer {
 func (b Board) ObserverByID(userID uint64) (Observer, bool) {
 	for _, obs := range b.Observers {
 		if obs.UserID == userID {
-			return obs, true
+			return *obs, true
 		}
 	}
 	return Observer{}, false
@@ -335,7 +326,7 @@ func IsAdmin(userID, boardID uint64) bool {
 	return false
 }
 
-func f1(obss []Observer) []uint64 {
+func f1(obss []*Observer) []uint64 {
 	res := []uint64{}
 	for _, el := range obss {
 		res = append(res, el.UserID)
@@ -347,7 +338,7 @@ func AddObserver(boardID, userID uint64, pwd string) bool {
 	if b := boardPointerByID(boardID); b != nil {
 		if b.Password == pwd {
 			nID := incrementor.Next("db-obsid", true)
-			b.Observers = append(b.Observers, Observer{userID, ActionsHistory{}, ChatHistory{}})
+			b.Observers = append(b.Observers, &Observer{nID, userID, ActionsHistory{}, ChatHistory{}})
 			database.Query(`update "Boards" set "ObserversIDs" = $1 where "ID" = $2`, 0, f1(b.Observers), boardID)
 			database.Query(`insert into "Observers" values($1, $2, '', '')`, 0, nID, userID)
 			return true
@@ -376,32 +367,34 @@ func f2(actions []ActionMSG) []uint64 {
 }
 
 func NewAction(boardID, viewID uint64, naction ActionMSG) (ActionMSG, bool) {
-	actionID := incrementor.Next("Board-action", true)
-	drawingID := incrementor.Next("Board-drawing", true)
-	naction.ID = actionID
-	naction.Drawing.ID = drawingID
-	bar := BoardsArray
-	_ = bar
 	if b := boardPointerByID(boardID); b != nil {
-		if viewID == 0 {
-			b.Actions = append(b.Actions, naction)
-			database.Query(`update "Boards" set "ActionsIDs" = $1 where "ID" = $2`, 0, f2(b.Actions), boardID)
-		} else {
-			if obs := b.obspointerByID(viewID); obs != nil {
-				obs.Actions = append(obs.Actions, naction)
-				database.Query(`update "Observers" set "ActionsIDs" = $1 where "ID" = $2`, 0, f2(obs.Actions), boardID)
-			}
-		}
+		actionID := incrementor.Next("Board-action", true)
+		naction.ID = actionID
 		if naction.Type == 0 {
+			drawingID := incrementor.Next("Board-drawing", true)
+			naction.Drawing.ID = drawingID
 			drCont, err := json.Marshal(naction.Drawing.Data)
 			if err != nil {
 				panic(err)
 			}
 			database.Query(`insert into "Drawings" values($1, $2, $3)`, 0, naction.Drawing.ID, naction.Drawing.Type, drCont)
 		} else {
-			database.Query(`delete from "Drawings" where "ID" = $1`, 0, naction.ID)
+			database.Query(`delete from "Drawings" where "ID" = $1`, 0, naction.Drawing.ID)
 		}
 		database.Query(`insert into "Actions" values($1, $2, $3)`, 0, naction.ID, naction.Type, naction.Drawing.ID)
+
+		if viewID == 0 {
+			b.Actions = append(b.Actions, naction)
+			database.Query(`update "Boards" set "ActionsIDs" = $1 where "ID" = $2`, 0, f2(b.Actions), boardID)
+		} else {
+			if obs := b.obspointerByID(viewID); obs != nil {
+				obs.Actions = append(obs.Actions, naction)
+				database.Query(`update "Observers" set "ActionsHist" = $1 where "ID" = $2`, 0, f2(obs.Actions), obs.DBID)
+			}
+		}
+
+		b := BoardsArray
+		_ = b
 		return naction, true
 	} else {
 		return ActionMSG{}, false
@@ -419,6 +412,14 @@ func curTimeStamp() TimeStamp {
 	}
 }
 
+func f3(progChat ChatHistory) []uint64 {
+	res := []uint64{}
+	for _, el := range progChat {
+		res = append(res, el.ID)
+	}
+	return res
+}
+
 func NewChatMessage(boardID, viewID, senderID uint64, content ChatContent) (ChatMessage, bool) {
 	timeStamp := curTimeStamp()
 	msgID := incrementor.Next("chat-message", true)
@@ -427,9 +428,11 @@ func NewChatMessage(boardID, viewID, senderID uint64, content ChatContent) (Chat
 	if b := boardPointerByID(boardID); b != nil {
 		if viewID == 0 {
 			b.Chat = append(b.Chat, msg)
+			database.Query(`update "Boards" set "ChatHistory" = $1 where "ID" = $2`, 0, f3(b.Chat), boardID)
 		} else {
 			if obs := b.obspointerByID(viewID); obs != nil {
 				obs.Chat = append(obs.Chat, msg)
+				database.Query(`update "Observers" set "ChatHist" = $1 where "ID" = $2`, 0, f3(obs.Chat), obs.DBID)
 			} else {
 				return ChatMessage{}, false
 			}
