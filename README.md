@@ -1,4 +1,4 @@
-# SharedChemBoard
+# SharedChemBoard-Web
 
 The main purpose of this software is to help students and teachers keep learning while being on quarantine.
 
