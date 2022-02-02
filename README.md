@@ -2,6 +2,8 @@
 
 The main purpose of this software is to help students and teachers keep learning while being on quarantine.
 
+This software provides a WEB app.
+
 ## Current functionality:
 
 - Teachers can create rooms where students can join
