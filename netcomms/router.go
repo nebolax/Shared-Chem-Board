@@ -47,8 +47,8 @@ func StartServer() {
 	router.HandleFunc("/ws/board{id:[0-9]+}", board_page.HandleSockets)
 	http.Handle("/", router)
 
-	log.Println("starting http server at port 8090")
-	if err := http.ListenAndServe(":8090", nil); err != nil {
+	log.Println("starting http server at port 5000")
+	if err := http.ListenAndServe(":5000", nil); err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }

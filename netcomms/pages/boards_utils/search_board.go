@@ -12,7 +12,9 @@ func SearchBoardPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "login", http.StatusSeeOther)
 	} else {
 		tmpl, _ := template.ParseFiles("./static/boards_utils/search_board.html")
-		tmpl.Execute(w, nil)
+		searchRes := all_boards.BoardsWithoutUser("", account_logic.GetUserID(r))
+
+		tmpl.Execute(w, searchRes)
 	}
 }
 

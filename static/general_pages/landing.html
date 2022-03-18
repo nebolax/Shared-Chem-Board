@@ -1,27 +1,27 @@
 <!DOCTYPE html>
 <html lang="ru">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-</head>
+  </head>
 
-<body>
-    <p>Добро пожаловать на сайт рисования!!!</p>
+  <body>
+    <p>Welcome to the painting website!!!</p>
     {{ if . }}
-    <p>Рады видеть вас снова!</p>
-    <p>Вы можете пройти на свою <a href="/home">домашнюю страницу</a></p>
+    <p>Glad to see you again!</p>
+    <p>You can move to your <a href="/home">home page</a></p>
     {{ else }}
-    <p>Дествия на сайте доступны только авторизованным пользователям</p>
-    <p>Войти в личный кабинет:
-        <a href="/login">вход</a>
+    <p>Any actions on this site are allowed only to registered users</p>
+    <p>
+      Log in:
+      <a href="/login">login</a>
     </p>
-    <p>Зарегистрироваться:
-        <a href="/register">регистрация</a>
+    <p>
+      Or register:
+      <a href="/register">registration</a>
     </p>
     {{ end }}
-</body>
-
+  </body>
 </html>

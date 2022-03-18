@@ -1,119 +1,130 @@
 class Observer {
-    userid: number;
-    username: string;
+  userid: number;
+  username: string;
 
-    constructor(userid: number, username: string) {
-        this.userid = userid
-        this.username = username
-    }
+  constructor(userid: number, username: string) {
+    this.userid = userid;
+    this.username = username;
+  }
 }
 
 class User {
-    id: number;
-    login: string;
-    email: string;
+  id: number;
+  login: string;
+  email: string;
 
-    constructor(msg: any) {
-        this.id = msg.id
-        this.login = msg.login
-        this.email = msg.email
-    }
+  constructor(msg: any) {
+    this.id = msg.id;
+    this.login = msg.login;
+    this.email = msg.email;
+  }
 }
 
 class ChatMsgContent {
-    text: string;
+  text: string;
 
-    constructor(msgContent: any) {
-        this.text = msgContent.text
-    }
+  constructor(msgContent: any) {
+    this.text = msgContent.text;
+  }
 }
 
 class TimeStamp {
-    year: number;
-    month: number;
-    day: number;
-    hour: number;
-    minute: number;
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
 
-    constructor(msgStamp: any) {
-        this.year = msgStamp.year
-        this.month = msgStamp.month
-        this.day = msgStamp.day
-        this.hour = msgStamp.hour
-        this.minute = msgStamp.minute
-    }
-    time() {
-        return this.hour + ":" + this.minute
-    }
-    date() {
-        return this.day + "." + this.month + "." + this.year
-    }
+  constructor(msgStamp: any) {
+    this.year = msgStamp.year;
+    this.month = msgStamp.month;
+    this.day = msgStamp.day;
+    this.hour = msgStamp.hour;
+    this.minute = msgStamp.minute;
+  }
+  time() {
+    return this.hour + ":" + this.minute;
+  }
+  date() {
+    return this.day + "." + this.month + "." + this.year;
+  }
 }
 
 class ChatMessage {
-    id: number;
-    sender: User;
-    timestamp: TimeStamp;
-    content: ChatMsgContent;
+  id: number;
+  sender: User;
+  timestamp: TimeStamp;
+  content: ChatMsgContent;
 
-    constructor(msg: any) {
-        this.id = msg.id
-        this.sender = new User(msg.sender)
-        this.timestamp = new TimeStamp(msg.timestamp)
-        this.content = new ChatMsgContent(msg.content)
-    }
+  constructor(msg: any) {
+    this.id = msg.id;
+    this.sender = new User(msg.sender);
+    this.timestamp = new TimeStamp(msg.timestamp);
+    this.content = new ChatMsgContent(msg.content);
+  }
 }
 
 class BasicChat {
-    history: ChatMessage[] = [];
-    chatTag: HTMLDivElement;
-    ws: WebSocket;
-    msgTemplate: HTMLTemplateElement;
-    msgInput: HTMLInputElement;
-    chatContainer: HTMLDivElement;
+  history: ChatMessage[] = [];
+  chatTag: HTMLDivElement;
+  ws: WebSocket;
+  msgTemplate: HTMLTemplateElement;
+  msgInput: HTMLInputElement;
+  chatContainer: HTMLDivElement;
 
-    constructor(chatTag: HTMLDivElement, ws: WebSocket) {
-        this.chatTag = chatTag
-        this.msgTemplate = <HTMLTemplateElement>this.chatTag.querySelector("#template-chatmsg")
-        this.msgInput = <HTMLInputElement>this.chatTag.querySelector("#new-chat-msg-text")!!
-        this.chatContainer = <HTMLDivElement>this.chatTag.querySelector("#chat-container")
-        this.ws = ws
-        chatTag.querySelector("#send-new-chat-msg")!!.addEventListener("click", () => { this.sendMessage() })
-    }
+  constructor(chatTag: HTMLDivElement, ws: WebSocket) {
+    this.chatTag = chatTag;
+    this.msgTemplate = <HTMLTemplateElement>(
+      this.chatTag.querySelector("#template-chatmsg")
+    );
+    this.msgInput = <HTMLInputElement>(
+      this.chatTag.querySelector("#new-chat-msg-text")!!
+    );
+    this.chatContainer = <HTMLDivElement>(
+      this.chatTag.querySelector("#chat-container")
+    );
+    this.ws = ws;
+    chatTag
+      .querySelector("#send-new-chat-msg")!!
+      .addEventListener("click", () => {
+        this.sendMessage();
+      });
+  }
 
-    clear() {
-        this.history = []
-        this.chatContainer.innerHTML = ""
+  clear() {
+    this.history = [];
+    this.chatContainer.innerHTML = "";
+  }
+  sendMessage() {
+    let msgText = this.msgInput.value;
+    this.msgInput.value = "";
+    if (msgText == null || msgText == undefined || msgText == "") {
+      alert("You have to enter some text");
+    } else {
+      let outMsg = {
+        type: MsgTypes.OutChatMsg,
+        data: {
+          text: msgText,
+        },
+      };
+      this.ws.send(JSON.stringify(outMsg));
     }
-    sendMessage() {
-        let msgText = this.msgInput.value
-        this.msgInput.value = ""
-        if (msgText == null || msgText == undefined || msgText == "") {
-            alert("Вы должны ввести хотя бы какой-то текст")
-        } else {
-            let outMsg = {
-                type: MsgTypes.OutChatMsg,
-                data: {
-                    text: msgText
-                }
-            }
-            this.ws.send(JSON.stringify(outMsg))
-        }
-    }
-    loadHistory(msgHist: any) {
-        this.clear()
-        this.history = msgHist.history
-        this.history.forEach(el => {
-            this.newMessage(el)
-        });
-    }
-    newMessage(inpMsg: any) {
-        let msg = new ChatMessage(inpMsg)
-        this.history.push(msg)
-        let clone = document.importNode(this.msgTemplate.content, true)
-        clone.querySelector(".chatmsg-text")!!.innerHTML = msg.content.text
-        let timestamp = msg.timestamp.time()
-        clone.querySelector(".chatmsg-info")!!.innerHTML = msg.sender.login + "  -  " + timestamp
-        this.chatContainer.appendChild(clone)
-    }
+  }
+  loadHistory(msgHist: any) {
+    this.clear();
+    this.history = msgHist.history;
+    this.history.forEach((el) => {
+      this.newMessage(el);
+    });
+  }
+  newMessage(inpMsg: any) {
+    let msg = new ChatMessage(inpMsg);
+    this.history.push(msg);
+    let clone = document.importNode(this.msgTemplate.content, true);
+    clone.querySelector(".chatmsg-text")!!.innerHTML = msg.content.text;
+    let timestamp = msg.timestamp.time();
+    clone.querySelector(".chatmsg-info")!!.innerHTML =
+      msg.sender.login + "  -  " + timestamp;
+    this.chatContainer.appendChild(clone);
+  }
 }

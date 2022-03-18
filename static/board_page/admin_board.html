@@ -1,60 +1,74 @@
 <!DOCTYPE html>
 <html lang="ru">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-</head>
+  </head>
 
-<body>
-    <div style="display: block; float: left; margin-right: 5%; border: 3px solid black;">
-        <svg width="500" height="500" id="svg">
-        </svg>
+  <body>
+    <div
+      style="
+        display: block;
+        float: left;
+        margin-right: 5%;
+        border: 3px solid black;
+      "
+    >
+      <svg width="500" height="500" id="svg"></svg>
     </div>
-    <button id="stepback">Шаг назад</button>
-    <button id="exportimg">Экспорт изображения</button>
-    <div id="views-nav" style="display: block; float: left; margin-right: 5%;">
-        <div>
-            <button id="general-page">Общая доска</button>
-        </div>
-        <div>
-            <div id="observers-nav">
-            </div>
-            <template id="template-obsname">
-            <div>
-                <button id="chviewBtn">Default text</button>
-            </div>
+    <button id="stepback">Step back</button>
+    <button id="exportimg">Export board as png</button>
+    <div id="views-nav" style="display: block; float: left; margin-right: 5%">
+      <div>
+        <button id="general-page">General board</button>
+      </div>
+      <div>
+        <div id="observers-nav"></div>
+        <template id="template-obsname">
+          <div>
+            <button id="chviewBtn">Default text</button>
+          </div>
         </template>
-        </div>
+      </div>
     </div>
-    <div id="chat" style="display: block; float: left; margin-right: 1%;">
-        <div id="chat-container">
-
-        </div>
-        <div>
-            <template id="template-chatmsg">
-                <div>
-                    <p class="chatmsg-info"></p>
-                    <p class="chatmsg-text"></p>
-                    <hr>
-                </div>
-            </template>
-        </div>
-        <div>
-            <input type="text" placeholder="Текст сообщения" id="new-chat-msg-text">
-            <button type="button" id="send-new-chat-msg">Отправить</button>
-        </div>
+    <div id="chat" style="display: block; float: left; margin-right: 1%">
+      <div id="chat-container"></div>
+      <div>
+        <template id="template-chatmsg">
+          <div>
+            <p class="chatmsg-info"></p>
+            <p class="chatmsg-text"></p>
+            <hr />
+          </div>
+        </template>
+      </div>
+      <div>
+        <input type="text" placeholder="Text here" id="new-chat-msg-text" />
+        <button type="button" id="send-new-chat-msg">Send</button>
+      </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.slim.js" integrity="sha256-HwWONEZrpuoh951cQD1ov2HUK5zA5DwJ1DNUXaM6FsY=" crossorigin="anonymous"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.slim.js"
+      integrity="sha256-HwWONEZrpuoh951cQD1ov2HUK5zA5DwJ1DNUXaM6FsY="
+      crossorigin="anonymous"
+    ></script>
     <script src="/static/snap/snap.svg.js"></script>
     <script src="/static/svgconv/saveSvgAsPng.js"></script>
-    <script type="text/javascript" src="/static/js/basic_board_class.js"></script>
-    <script type="text/javascript" src="/static/js/basic_chat_class.js"></script>
-    <script type="text/javascript" src="/static/js/admin_board_class.js"></script>
+    <script
+      type="text/javascript"
+      src="/static/js/basic_board_class.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="/static/js/basic_chat_class.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="/static/js/admin_board_class.js"
+    ></script>
     <script type="text/javascript" src="/static/js/admin_board.js"></script>
-</body>
-
+  </body>
 </html>
