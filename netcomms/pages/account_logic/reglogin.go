@@ -3,6 +3,7 @@ package account_logic
 import (
 	"ChemBoard/utils/incrementor"
 	"ChemBoard/utils/status"
+	"fmt"
 	"html/template"
 	"net/http"
 )
@@ -38,8 +39,9 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 func ProcRegister(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	inpLogin := r.PostForm.Get("login")
-	inpPwd := r.PostForm.Get("password")
 	inpEmail := r.PostForm.Get("email")
+	inpPwd := r.PostForm.Get("password")
+	fmt.Printf("%s, %s, %s", inpLogin, inpEmail, inpPwd)
 	id, cs := RegUser(inpLogin, inpEmail, inpPwd)
 	switch cs {
 	case status.OK:
@@ -59,7 +61,7 @@ func RegisterPage(w http.ResponseWriter, r *http.Request) {
 
 func ProcLogin(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	inpLogmail := r.PostForm.Get("login")
+	inpLogmail := r.PostForm.Get("logmail")
 	inpPwd := r.PostForm.Get("password")
 	user, cs := LoginUser(inpLogmail, inpPwd)
 	tmpl, _ := template.ParseFiles("./static/account_logic/login.html")
@@ -96,7 +98,8 @@ func RegUser(login, email, pwd string) (int, status.StatusCode) {
 
 //LoginUser is func
 func LoginUser(logmail, inpPwd string) (DBUser, status.StatusCode) {
-	if user, ok := userFromDB(logmail); ok {
+	if user, ok := userFromDB(logmail); !ok {
+		fmt.Println("No such user!")
 		return DBUser{}, status.NoSuchUser
 	} else {
 		if passwords[user.ID] != inpPwd {
